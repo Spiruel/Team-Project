@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
-data = np.loadtxt('tp.csv', delimiter=',')
+data = np.loadtxt('Team 17/sin wave test.csv', delimiter=',')
 time, amplitude = data[:,0], data[:,1]
 
 plt.plot(time, amplitude)
