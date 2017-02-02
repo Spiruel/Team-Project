@@ -34,13 +34,14 @@ for i in range(0,len(amplitude),1):
 	else:
 		plt.xlim([xlim-scroll_size, xlim])'''
 
-def animate_waterfall(freq=1500, tim_per=2):
+def animate_waterfall(amplitude, freq=1500, tim_per=2):
 	step = tim_per*freq
 
 	plt.ion()
 	#result = np.array([], ndim=3)
+	plt.xlabel('time'); plt.ylabel('freq')
 	for i in range(0,len(amplitude),step):
-		result = STFT(amplitude[0:i+step], fs=freq)[0]
+		result = STFT(amplitude[0:i+step], fs=freq, clip=True)[0]
 		img = plt.imshow(result.T, origin='lower', cmap='jet', interpolation='nearest', aspect='auto')
 
 		if i == 0: plt.colorbar()
@@ -54,7 +55,7 @@ def animate_waterfall(freq=1500, tim_per=2):
 		else:
 			plt.xlim([xlim-scroll_size, xlim])
 
-animate_waterfall()
+animate_waterfall(amplitude)
 '''
 plt.plot(time, amplitude)
 plt.show()
