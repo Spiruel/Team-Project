@@ -15,6 +15,7 @@ step = tim_per*freq
 
 plt.ion()
 
+'''
 t, a = np.array([0,1]), np.array([0,1])
 line, = plt.plot(t, a, 'k')
 for i in range(0,len(amplitude),1):
@@ -25,13 +26,13 @@ for i in range(0,len(amplitude),1):
 	plt.draw()
 	plt.pause(0.05)
 
-	'''scroll_size = .1
+
+	scroll_size = .1
 	xlim = t[-1]
 	if xlim<=scroll_size:
 		plt.xlim([0, scroll_size])
 	else:
 		plt.xlim([xlim-scroll_size, xlim])'''
-
 
 def animate_waterfall(freq=1500, tim_per=2):
 	step = tim_per*freq
@@ -39,8 +40,8 @@ def animate_waterfall(freq=1500, tim_per=2):
 	plt.ion()
 	#result = np.array([], ndim=3)
 	for i in range(0,len(amplitude),step):
-		result = STFT(amplitude[0:i+step], fs=freq)
-		img = plt.imshow(result.T, origin='lower', cmap='jet', interpolation='nearest', aspect='auto', vmax=-100)
+		result = STFT(amplitude[0:i+step], fs=freq)[0]
+		img = plt.imshow(result.T, origin='lower', cmap='jet', interpolation='nearest', aspect='auto')
 
 		if i == 0: plt.colorbar()
 		plt.pause(0.05)
@@ -53,7 +54,7 @@ def animate_waterfall(freq=1500, tim_per=2):
 		else:
 			plt.xlim([xlim-scroll_size, xlim])
 
-
+animate_waterfall()
 '''
 plt.plot(time, amplitude)
 plt.show()

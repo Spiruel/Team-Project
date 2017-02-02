@@ -31,7 +31,7 @@ def STFT(data, fs = 1500, clip = False):
 	    segment = proc[current_hop:current_hop+fft_size]  # get the current segment
 	    windowed = segment * window                       # multiply by the half cosine function
 	    padded = np.append(windowed, inner_pad)           # add 0s to double the length of the data
-	    spectrum = np.fft.fft(padded) #/ fft_size          # take the Fourier Transform and scale by the number of samples
+	    spectrum = np.fft.fft(padded) / fft_size          # take the Fourier Transform and scale by the number of samples
 	    autopower = np.abs(spectrum * np.conj(spectrum))  # find the autopower spectrum
 	    #print np.fft.fftfreq(fft_size, d = np.float32(1/fs)) 
 	    result[i, :] = autopower[:fft_size]               # append to the results array
