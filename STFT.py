@@ -5,12 +5,18 @@ from scipy import signal
 
 
 data = np.loadtxt('Team 17/12V motor x axis.csv', delimiter=',',skiprows = 3)[:,1]
-fs = 1500 #sampling frequency
+fs=1500
 
 # data = a numpy array containing the signal to be processed
 # fs = a scalar which is the sampling frequency of the data
 def STFT(data, fs = 1500, clip = False):
-	'''data is 1d array of amplitudes for a given time. fs is sampling frequency of the signal'''
+	'''data is 1d array of amplitudes for a given time. fs is sampling frequency of the signal. clip is a boolean indicating
+	whether or not the lowest frequencies should be removed, in order to increase the dynamic range.
+	Returns a 2d array where the values correspond to the autopower. The x axis corresponds to the 
+	window size and the y axis corresponds to the total number of samples in data divided by the number
+	of samples in window size. These can be converted into frequencies and times respecitvely, using max_freq
+	and max_time.
+	Hz_clip is cutoff treshold for frequency.'''
 
 	fft_size = 500 #number of samples used for window
 	overlap_fac = 0.5 #overlap factor
@@ -48,7 +54,6 @@ def STFT(data, fs = 1500, clip = False):
 	max_time = t_max
 	
 	Hz_clip = clip_freq/fft_size * max_freq 
-	print Hz_clip
 
 	return (result, max_freq, max_time, Hz_clip)
 
