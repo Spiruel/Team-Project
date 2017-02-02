@@ -38,9 +38,11 @@ def animate_waterfall(amplitude, freq=1500, tim_per=2):
 	step = tim_per*freq
 
 	plt.ion()
-	#result = np.array([], ndim=3)
+	
+	#result = np.ndarray(shape=(12,470))
 	plt.xlabel('time'); plt.ylabel('freq')
 	for i in range(0,len(amplitude),step):
+		#result = np.concatenate((result, STFT(amplitude[i:i+step], fs=freq, clip=True)[0]), axis=0)
 		result = STFT(amplitude[0:i+step], fs=freq, clip=True)[0]
 		img = plt.imshow(result.T, origin='lower', cmap='jet', interpolation='nearest', aspect='auto')
 
