@@ -50,7 +50,7 @@ def STFT(data, fs = 1500, clip = False):
 	result = 20*np.log10(result)          # scale to db
 	#result = np.clip(result, -40, 200)  
 	
-	max_freq = fs/2 #divided by two as the sample window was extended with zeros.
+	max_freq = fs/2 #divided by two as the sample window was extended with zeros and then only the bottom half of the frequencies were taken.
 	max_time = t_max
 	
 	Hz_clip = clip_freq/fft_size * max_freq 
