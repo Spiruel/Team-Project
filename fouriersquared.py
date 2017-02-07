@@ -17,65 +17,63 @@ sample_interval = 1.0/1500.0
 #    time_values = data_len / sample_rate
 #    waveform = np.array(data, time_values)
 #    return waveform
+n = len(time)
+k = np.arange(n)
+T = n / sample_rate
+frequency = k / T
+frequency = frequency[range(n/2)]
 
-def plotFourierSquared(amplitude, sample_rate):
-    n = len(time) #length of signal
-    k = np.arange(n)
-    T = n / sample_rate
-    frequency = k / T
-    frequency = frequency[range(n/2)]
     
-    Y = fft(amplitude) / n
-    Y = abs(Y[range(n/2)])
+Y = fft(amplitude) / n
+Y = abs(Y[range(n/2)])
 #    Y = 20*np.log10(Y)
-    
-    plt.plot(frequency, Y)
-    plt.xlabel('Freq (Hz)')
-    plt.ylabel('|Y(freq)|')
+plt.plot(frequency, Y)    
     
 def lorentzian(p):
-    num = (p[0]**2)
-    denom = (frequency - (p[1])) ** 2 + p[0] ** 2
-    amplitude = p[2] * (num / denom)
-    return amplitude
+    num = (p[0] ** 2)
+    denom = ((frequency - (p[1])) ** 2 + p[0] ** 2)
+    Y = p[2] * (num / denom)
+    return Y
     
 def residuals(p, amplitude):
-    err = amplitude - lorentzian(p)
+    err = Y - lorentzian(p)
     return err
 
     #background subtraction
 
-ind_bg_low = (time > min(time)) & (time < 299.0) #defining background
-ind_bg_high = (time > 301.25) & (time < max(time))
+ind_bg_low = (frequency > min(frequency)) & (frequency < 299.0) #defining background
+ind_bg_high = (frequency > 301.25) & (frequency < max(frequency))
 
-time_bg = np.concatenate((time[ind_bg_low], time[ind_bg_high]))
-amplitude_bg = np.concatenate((amplitude[ind_bg_low], amplitude[ind_bg_high]))
+frequency_bg = np.concatenate((frequency[ind_bg_low], frequency[ind_bg_high]))
+Y_bg = np.concatenate((Y[ind_bg_low], Y[ind_bg_high]))
         #plt.plot(x_bg, y_bg)
 
     #fitting backround to a line
-m, c = np.polyfit(time_bg, amplitude_bg, 1)
+m, c = np.polyfit(frequency_bg, Y_bg, 1)
 
     #removing fitted background
-background = m * time + c
-amplitude_bg_corr = amplitude - background
-        #plt.plot(x, y_bg_corr)
+background = m * frequency + c
+Y_bg_corr = Y - background
+plt.plot(frequency, background)
 
     #initial values
-p = [0.020, 300.107, 0.0007248] #hwhm, peak centre, intensity
+p = [0.030, 300.1, 0.0007748] #hwhm, peak centre, intensity
+#p = [0.01, 63.0354, 0.0046] #x axis 10 mins data
 
     #optimization
-pbest = leastsq(residuals, p, args = (amplitude_bg_corr), full_output = 1)
+pbest = leastsq(residuals, p, args = (Y_bg_corr), full_output = 1)
 best_parameters = pbest[0]
+
 
     #fit to data
 fit = lorentzian(best_parameters)
 
-#plt.plot(time, amplitude_bg_corr, 'wo')
-plt.plot(time, lorentzian(p), 'r-', lw=2)
+#plt.plot(frequency, amplitude_bg_corr, 'wo')
+plt.plot(frequency, lorentzian(best_parameters) + background, 'r-', lw=2)
 plt.xlabel(r'$\omega$ (cm$^{-1}$', fontsize = 18)
 plt.ylabel('Intensity (a.u.)', fontsize = 18)
 
-print time
 
-plotFourierSquared(amplitude, sample_rate)
+
+
 plt.show()
