@@ -19,7 +19,7 @@ SAMPLE_RATE = 3000	# ADC input sample rate (Hz)
 
 AICHANNELS = "Dev1/ai0:2"	# Analog input channels
 NCHANS = 3			# number of analog input channels
-VMax = 10.0					# Maximum input voltage 
+VMax = 10.0			# Maximum input voltage 
 
 plt.ion()
 
