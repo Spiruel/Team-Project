@@ -57,7 +57,7 @@ Y_bg_corr = Y - background
 plt.plot(frequency, background)
 
     #initial values
-p = [0.030, 300.1, 0.0007748] #hwhm, peak centre, intensity
+p = [0.030, 300.1, 0.0007848] #hwhm, peak centre, intensity
 #p = [0.01, 63.0354, 0.0046] #x axis 10 mins data
 
     #optimization
@@ -72,8 +72,8 @@ fit = lorentzian(best_parameters)
 plt.plot(frequency, lorentzian(best_parameters) + background, 'r-', lw=2)
 plt.xlabel(r'$\omega$ (cm$^{-1}$', fontsize = 18)
 plt.ylabel('Intensity (a.u.)', fontsize = 18)
-
-
+#plt.xlim(298.5, 302)
+#plt.ylim(0.0, 0.0009)
 
 
 plt.show()
