@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import butter, lfilter, freqz
+from scipy.signal import butter, lfilter, freqz, filtfilt
 import matplotlib.pyplot as plt
 import Audio_waveform as am
 
@@ -24,12 +24,12 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 def butter_highpass(cutoff, fs, order=5):
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
-    b, a = signal.butter(order, normal_cutoff, btype='high', analog=False)
+    b, a = butter(order, normal_cutoff, btype='high', analog=False)
     return b, a
 
 def butter_highpass_filter(data, cutoff, fs, order=5):
     b, a = butter_highpass(cutoff, fs, order=order)
-    y = signal.filtfilt(b, a, data)
+    y = filtfilt(b, a, data)
     return y
     
     
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
 	#y = butter_lowpass_filter(data, cutoff, fs, order)
 	
-	print butter_lowpass(cutoff,fs,order)
+	print (cutoff,fs,order)
 	
 	times, amplitudes = am.waveform(data, fs)
 	
