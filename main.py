@@ -1,56 +1,80 @@
-import threading, sys
+import time
+import threading
+from Tkinter import *
+import sys
 import numpy as np
+import matplotlib.pyplot as plt
+
 from daqai import DAQmx_ReadAI as ReadAI
 
-d1 = np.array([]); d2 = np.array([]); d3 = np.array([])
-
 class DataCaptThread(threading.Thread):
-    def run(self):
-	DURATION = .05
-	savename = None
+	def __init__(self):
+		threading.Thread.__init__(self)
+		
+		self.DURATION = .05
+		self.savename = None
 
-	# Hardcoded values: these may need to be changed or obtained from commandline
-	SAMPLE_RATE = 3000	# ADC input sample rate (Hz)
+		# Hardcoded values: these may need to be changed or obtained from commandline
+		self.SAMPLE_RATE = 3000	# ADC input sample rate (Hz)
 
-	AICHANNELS = "Dev1/ai0:2"	# Analog input channels
-	NCHANS = 3			# number of analog input channels
-	VMax = 10.0			# Maximum input voltage 
-        try:
-    		while True:
-			data = ReadAI(DURATION, chanlist=AICHANNELS, nchans=NCHANS, samplerate=SAMPLE_RATE, vrange=VMax)
+		self.AICHANNELS = "Dev1/ai0:2"	# Analog input channels
+		self.NCHANS = 3			# number of analog input channels
+		self.VMax = 10.0			# Maximum input voltage
+		
+		self.d1 = np.array([]); self.d2 = np.array([]); self.d3 = np.array([]) #should be queue
+		
+	def run(self):
+		try:
+			while True:
+				data = ReadAI(self.DURATION, chanlist=self.AICHANNELS, nchans=self.NCHANS, samplerate=self.SAMPLE_RATE, vrange=self.VMax)
 
-			d1 = np.concatenate((d1, data[:,0]))
-			d2 = np.concatenate((d2, data[:,1]))
-			d3 = np.concatenate((d3, data[:,2]))
-	except KeyboardInterrupt:
-	    	print 'Saving data and exiting!'
-		filename = raw_input('Enter filename here: ')
-		np.savetxt('data/'+filename+'.csv', np.c_[d1,d2,d3])
-		sys.exit(1)
-
-class GuiThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.root = Tk()
-        self.lbl = Label(self.root, text="")
-
-    def run(self):
-        self.lbl(pack)
-        self.lbl.after(1000, self.updateGUI)
-        self.root.mainloop()
-
-    def updateGUI(self):
-        msg = "Data is True" if data else "Data is False"
-        self.lbl["text"] = msg
-        self.root.update()
-        self.lbl.after(1000, self.updateGUI)
+				self.d1 = np.concatenate((self.d1, data[:,0]))
+				self.d2 = np.concatenate((self.d2, data[:,1]))
+				self.d3 = np.concatenate((self.d3, data[:,2]))
+		except KeyboardInterrupt:
+			sys.exit()
+		
+class Analysis():
+	def __init__(self, test):
+		print 'Started analysis'
+		self.data = data_capture
+		plt.ion()
+		plt.ylim([-0.6,0.6])
+		plt.ylabel('Amplitude / V')
+		plt.xlabel('Samples')
+		
+	def show_data(self):
+	
+		plt.plot(self.data.d1, 'r-'); plt.plot(self.data.d2, 'g-', label='y'); plt.plot(self.data.d3, 'b-', label='z')
+		
+		win_size = self.data.SAMPLE_RATE*self.data.DURATION*10
+		plt.xlim([0, win_size])
+		if len(self.data.d1) >= win_size:
+			plt.xlim([len(self.data.d1)-win_size, len(self.data.d1)])
+		plt.pause(0.05)
+		
 
 if __name__ == "__main__":
-    DataCaptThread().start()
-    GuiThread().start()
 
-    try:
-        while True:
-            print 'oooooh'
-    except KeyboardInterrupt:
-        exit()
+	time.sleep(.5)
+	data_capture = DataCaptThread()
+	data_capture.start()
+	analysis = Analysis(data_capture)
+	
+	try:
+		while True:
+			analysis.show_data()
+	except KeyboardInterrupt:
+		print 'Saving data and exiting!'
+		filename = raw_input('Enter filename here: ')
+		np.savetxt('data/'+filename+'.csv', np.c_[data_capture.d1,data_capture.d2,data_capture.d3], delimiter=',')
+		print 'Finished saving'
+
+	
+	# try:
+		# while True:
+			# print len(data_capture.d1)
+	# except KeyboardInterrupt:
+		# data_capture.quit()
+		# print 'hello'
+		# data_capture.stop()

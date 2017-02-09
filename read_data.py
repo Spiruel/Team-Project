@@ -37,8 +37,8 @@ while True:
 		data = ReadAI(DURATION, chanlist=AICHANNELS, nchans=NCHANS, samplerate=SAMPLE_RATE, vrange=VMax) #NEED TO THREAD THIS
 
 		d1 = np.concatenate((d1, data[:,0])); d2 = np.concatenate((d2, data[:,1])); d3 = np.concatenate((d3, data[:,2]))
-		plt.plot(d1, 'r-'); plt.plot(d2, 'b-'); plt.plot(d3, 'g-') #make this bit interactive
-		
+		plt.plot(d1, 'r-'); plt.plot(d2, 'g-', label='y'); plt.plot(d3, 'b-', label='z') #make this bit interactive
+
 		# line[0].set_xdata(np.linspace(0,SAMPLE_RATE*DURATION,SAMPLE_RATE*DURATION))
 		# line1[0].set_ydata(d2)
 		# line2[0].set_ydata(d3)
