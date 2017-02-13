@@ -39,7 +39,7 @@ def find_peaks(data,fs=3000):
 	
 if __name__ == '__main__':
 	
-	data = np.loadtxt('Team 17/sin wave test.csv', delimiter=',', comments='#')[:,1][:5000]
+	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1][:5000]
 	
 	fs = 1500
 	
@@ -64,12 +64,12 @@ if __name__ == '__main__':
 	plt.plot(peak_freqs,peak_amps, 'ro', markersize = 10)
 	plt.show()'''
 	
-	indexes = peakutils.indexes(freq_amps_db, thres=0.5, min_dist=10)
+	indexes = peakutils.indexes(freq_amps_db, thres=.8, min_dist=10)
 	print indexes
 	peak_freqs = freqs[indexes] 
 	peak_amps = freq_amps[indexes]
 	plt.figure(figsize=(10,6))
-	#plt.plot(peak_freqs, peak_amps,'ro', markersize = 10)
+	plt.plot(peak_freqs, peak_amps,'ro', markersize = 10)
 	
 	plt.xlabel('Frequency/ Hz')
 	plt.ylabel('Amplitude')

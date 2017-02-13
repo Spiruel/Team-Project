@@ -23,16 +23,22 @@ class DataCaptThread(threading.Thread):
 		
 		self.d1 = np.array([]); self.d2 = np.array([]); self.d3 = np.array([]) #should be queue
 		
+		self.running = True
+		
 	def run(self):
 		try:
-			while True:
+			while self.running:
 				data = ReadAI(self.DURATION, chanlist=self.AICHANNELS, nchans=self.NCHANS, samplerate=self.SAMPLE_RATE, vrange=self.VMax)
 
 				self.d1 = np.concatenate((self.d1, data[:,0]))
 				self.d2 = np.concatenate((self.d2, data[:,1]))
 				self.d3 = np.concatenate((self.d3, data[:,2]))
+
 		except KeyboardInterrupt:
 			sys.exit()
+			
+	def stop(self):
+		self.running = False
 		
 class Analysis():
 	def __init__(self, test):
@@ -53,6 +59,9 @@ class Analysis():
 			plt.xlim([len(self.data.d1)-win_size, len(self.data.d1)])
 		plt.pause(0.05)
 		
+		block_len = self.data.DURATION*self.data.SAMPLE_RATE
+		print 'Channel 1 std :', np.std(self.data.d1[-block_len:])
+		
 
 if __name__ == "__main__":
 
@@ -66,15 +75,7 @@ if __name__ == "__main__":
 			analysis.show_data()
 	except KeyboardInterrupt:
 		print 'Saving data and exiting!'
+		data_capture.stop()
 		filename = raw_input('Enter filename here: ')
 		np.savetxt('data/'+filename+'.csv', np.c_[data_capture.d1,data_capture.d2,data_capture.d3], delimiter=',')
 		print 'Finished saving'
-
-	
-	# try:
-		# while True:
-			# print len(data_capture.d1)
-	# except KeyboardInterrupt:
-		# data_capture.quit()
-		# print 'hello'
-		# data_capture.stop()

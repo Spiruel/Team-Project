@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import signal
+from scipy import signal, stats
 from scipy.fftpack import fft
 
 from STFT import STFT
@@ -13,8 +13,7 @@ tim_per = 2
 
 step = tim_per*freq
 
-plt.ion()
-
+step = tim_per*freq
 '''
 t, a = np.array([0,1]), np.array([0,1])
 line, = plt.plot(t, a, 'k')
@@ -34,8 +33,7 @@ for i in range(0,len(amplitude),1):
 	else:
 		plt.xlim([xlim-scroll_size, xlim])'''
 
-def animate_waterfall(amplitude, freq=1500, tim_per=2):
-	step = tim_per*freq
+def animate_waterfall(amplitude, step):
 
 	plt.ion()
 	
@@ -44,7 +42,7 @@ def animate_waterfall(amplitude, freq=1500, tim_per=2):
 	for i in range(0,len(amplitude),step):
 		#result = np.concatenate((result, STFT(amplitude[i:i+step], fs=freq, clip=True)[0]), axis=0)
 		result = STFT(amplitude[0:i+step], fs=freq, clip=True)[0]
-		img = plt.imshow(result.T, origin='lower', cmap='jet', interpolation='nearest', aspect='auto')
+		img = plt.imshow(result.T, origin='lower', cmap='viridis', interpolation='nearest', aspect='auto')
 
 		if i == 0: plt.colorbar()
 		plt.pause(0.05)
@@ -57,7 +55,14 @@ def animate_waterfall(amplitude, freq=1500, tim_per=2):
 		else:
 			plt.xlim([xlim-scroll_size, xlim])
 
-animate_waterfall(amplitude)
+step = tim_per*freq
+animate_waterfall(amplitude, step)
+# plt.plot(time, amplitude)
+# plt.show()
+
+# for i in range(0,len(amplitude),step):
+	# print stats.skew(amplitude[0:i+step]), stats.kurtosis(amplitude[0:i+step], fisher=False)
+	
 '''
 plt.plot(time, amplitude)
 plt.show()
