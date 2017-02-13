@@ -16,9 +16,9 @@ def butter_lowpass(cutoff, fs, order=5):
 
 def butter_lowpass_filter(data, cutoff, fs, order=5):
 	'''applies filter to the data and returns y, which is filtered data'''
-    b, a = butter_lowpass(cutoff, fs, order=order)
-    y = lfilter(b, a, data)
-    return y
+	b, a = butter_lowpass(cutoff, fs, order=order)
+	y = lfilter(b, a, data)
+	return y
     
 
 def butter_highpass(cutoff, fs, order=5):

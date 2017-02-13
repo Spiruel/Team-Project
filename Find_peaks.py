@@ -31,12 +31,21 @@ def find_peaks(data,fs=3000):
 	
 	freqs = fourier[0]
 	freq_amps = fourier[1]
+	freq_amps_db = 20*np.log10(freq_amps)
+	
+	indexes = peakutils.indexes(freq_amps_db, thres=30, min_dist=30)
+
+	
 	
 if __name__ == '__main__':
 	
-	data = np.loadtxt('Team 17/12V motor x axis ten minutes.csv', delimiter=',', comments='#')[:,1][:5000]
+	data = np.loadtxt('Team 17/sin wave test.csv', delimiter=',', comments='#')[:,1][:5000]
 	
 	fs = 1500
+	
+	import Filters
+	
+	data = Filters.butter_highpass_filter(data, cutoff=50, fs=1500, order=5)
 	
 	import Fourier
 	
@@ -44,7 +53,7 @@ if __name__ == '__main__':
 	
 	freqs = fourier[0]
 	freq_amps = fourier[1]
-	#freq_amps = 20*np.log10(freq_amps)
+	freq_amps_db = 20*np.log10(freq_amps)
 	
 	'''peaks = find_peaks(freq_amps, fs)
 	
@@ -55,13 +64,16 @@ if __name__ == '__main__':
 	plt.plot(peak_freqs,peak_amps, 'ro', markersize = 10)
 	plt.show()'''
 	
-	indexes = peakutils.indexes(freq_amps, thres=0.0000001, min_dist=30)
+	indexes = peakutils.indexes(freq_amps_db, thres=0.5, min_dist=10)
 	print indexes
 	peak_freqs = freqs[indexes] 
 	peak_amps = freq_amps[indexes]
 	plt.figure(figsize=(10,6))
-	plt.plot(peak_freqs, peak_amps,'ro', markersize = 10)
+	#plt.plot(peak_freqs, peak_amps,'ro', markersize = 10)
 	
-	plt.plot(freqs, freq_amps)
+	plt.xlabel('Frequency/ Hz')
+	plt.ylabel('Amplitude')
+	
+	plt.plot(freqs, freq_amps_db)
 	plt.show()
 	
