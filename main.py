@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 from daqai import DAQmx_ReadAI as ReadAI
 
 class DataCaptThread(threading.Thread):
-	def __init__(self):
+	def __init__(self, simulated=False):
 		threading.Thread.__init__(self)
-		
+
 		self.DURATION = .05
 		self.savename = None
 
@@ -24,19 +24,37 @@ class DataCaptThread(threading.Thread):
 		self.d1 = np.array([]); self.d2 = np.array([]); self.d3 = np.array([]) #should be queue
 		
 		self.running = True
+		self.simulated = simulated
+		
+		self.block_size = int(self.DURATION*self.SAMPLE_RATE)
 		
 	def run(self):
-		try:
-			while self.running:
-				data = ReadAI(self.DURATION, chanlist=self.AICHANNELS, nchans=self.NCHANS, samplerate=self.SAMPLE_RATE, vrange=self.VMax)
+		if not self.simulated:
+			try:
+				while self.running:
+					data = ReadAI(self.DURATION, chanlist=self.AICHANNELS, nchans=self.NCHANS, samplerate=self.SAMPLE_RATE, vrange=self.VMax)
 
-				self.d1 = np.concatenate((self.d1, data[:,0]))
-				self.d2 = np.concatenate((self.d2, data[:,1]))
-				self.d3 = np.concatenate((self.d3, data[:,2]))
+					self.d1 = np.concatenate((self.d1, data[:,0]))
+					self.d2 = np.concatenate((self.d2, data[:,1]))
+					self.d3 = np.concatenate((self.d3, data[:,2]))
 
-		except KeyboardInterrupt:
-			sys.exit()
-			
+			except KeyboardInterrupt:
+				sys.exit()
+		else:
+			full_data = np.loadtxt('data/mondaylongruntest.csv', delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
+			try:
+				i = 0
+				while self.running:
+					
+					data = full_data[i:i+self.block_size]
+					i += self.block_size
+					time.sleep(self.DURATION)
+					self.d1 = np.concatenate((self.d1, data[:,0]))
+					self.d2 = np.concatenate((self.d2, data[:,1]))
+					self.d3 = np.concatenate((self.d3, data[:,2]))
+
+			except KeyboardInterrupt:
+				sys.exit()
 	def stop(self):
 		self.running = False
 		
@@ -50,7 +68,6 @@ class Analysis():
 		plt.xlabel('Samples')
 		
 	def show_data(self):
-	
 		plt.plot(self.data.d1, 'r-'); plt.plot(self.data.d2, 'g-', label='y'); plt.plot(self.data.d3, 'b-', label='z')
 		
 		win_size = self.data.SAMPLE_RATE*self.data.DURATION*10
@@ -66,7 +83,15 @@ class Analysis():
 if __name__ == "__main__":
 
 	time.sleep(.5)
-	data_capture = DataCaptThread()
+	
+	if len(sys.argv) > 1:
+		if sys.argv[1].lower() == 'simulated':
+			data_capture = DataCaptThread(simulated=True)
+		else:
+			data_capture = DataCaptThread()
+	else:
+		data_capture = DataCaptThread()
+	
 	data_capture.start()
 	analysis = Analysis(data_capture)
 	

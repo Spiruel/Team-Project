@@ -14,7 +14,12 @@ else:
 		filename += '.csv'
 
 data = np.loadtxt(filename, delimiter=',', comments='#')
-plt.plot(data[:,0], 'r'); plt.plot(data[:,1], 'g'); plt.plot(data[:,2], 'b')
+plt.plot(data[:,0], 'r')#; plt.plot(data[:,1], 'g'); plt.plot(data[:,2], 'b')
+
+
+import Filters as F
+
+plt.plot(F.movingaverage(data[:,0], 0.01*len(data[:,0])), 'k--')
 
 split = 10
 
