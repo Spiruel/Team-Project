@@ -1,10 +1,9 @@
 import time
 import threading
-from Tkinter import *
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-
+import argparse
 try:
 	from daqai import DAQmx_ReadAI as ReadAI
 except:
@@ -62,22 +61,31 @@ class DataCaptThread(threading.Thread):
 		self.running = False
 		
 class Analysis():
-	def __init__(self, test):
+	def __init__(self, data_capture, plot):
 		print 'Started analysis'
 		self.data = data_capture
-		plt.ion()
-		plt.ylim([-0.6,0.6])
-		plt.ylabel('Amplitude / V')
-		plt.xlabel('Samples')
+		
+		self.show_plots = plot
+		
+		if self.show_plots:
+			plt.ion()
+			plt.ylim([-0.6,0.6])
+			plt.ylabel('Amplitude / V')
+			plt.xlabel('Samples')
 		
 	def show_data(self):
-		plt.plot(self.data.d1, 'r-'); plt.plot(self.data.d2, 'g-', label='y'); plt.plot(self.data.d3, 'b-', label='z')
-		
-		win_size = self.data.SAMPLE_RATE*self.data.DURATION*10
-		plt.xlim([0, win_size])
-		if len(self.data.d1) >= win_size:
-			plt.xlim([len(self.data.d1)-win_size, len(self.data.d1)])
-		plt.pause(0.05)
+		if self.show_plots:
+			# plt.plot(self.data.d1, 'r-'); plt.plot(self.data.d2, 'g-', label='y'); plt.plot(self.data.d3, 'b-', label='z')
+			import Filters as F
+			if not np.isnan(np.std(self.data.d1)):
+				plt.plot(F.movingaverage(self.data.d1, 0.01*data_capture.block_size), 'k--')
+
+			
+			win_size = self.data.SAMPLE_RATE*self.data.DURATION*10
+			plt.xlim([0, win_size])
+			if len(self.data.d1) >= win_size:
+				plt.xlim([len(self.data.d1)-win_size, len(self.data.d1)])
+			plt.pause(0.05)
 		
 		block_len = self.data.DURATION*self.data.SAMPLE_RATE
 		print 'Channel 1 std :', np.std(self.data.d1[-block_len:])
@@ -87,16 +95,18 @@ if __name__ == "__main__":
 
 	time.sleep(.5)
 	
-	if len(sys.argv) > 1:
-		if sys.argv[1].lower() == 'simulated':
-			data_capture = DataCaptThread(simulated=True)
-		else:
-			data_capture = DataCaptThread()
+	parser = argparse.ArgumentParser(description='Control simulation or plotting optoions')
+	parser.add_argument('-p', '--plot', action='store_true', help='enables plot view')
+	parser.add_argument('-s', '--simulated', action='store_true', help='enables simulation')
+	args = parser.parse_args()
+	
+	if args.simulated:
+		data_capture = DataCaptThread(simulated=True)
 	else:
 		data_capture = DataCaptThread()
 	
 	data_capture.start()
-	analysis = Analysis(data_capture)
+	analysis = Analysis(data_capture, args.plot)
 	
 	try:
 		while True:
