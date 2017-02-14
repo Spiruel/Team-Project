@@ -39,11 +39,10 @@ def find_peaks(data,fs=3000):
 	
 if __name__ == '__main__':
 	
-<<<<<<< HEAD
+	
 	data = np.loadtxt('Team 17/12V motor x axis ten minutes.csv', delimiter=',', comments='#')[:,1]#[:5000]
-=======
+
 	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1][:5000]
->>>>>>> 78f907e035ca58e86cf94726df55fb61ccaa4fdb
 	
 	fs = 1500
 	
@@ -68,11 +67,10 @@ if __name__ == '__main__':
 	plt.plot(peak_freqs,peak_amps, 'ro', markersize = 10)
 	plt.show()'''
 	
-<<<<<<< HEAD
 	indexes = peakutils.indexes(freq_amps_db, thres=0.8, min_dist=10)
-=======
+
 	indexes = peakutils.indexes(freq_amps_db, thres=.8, min_dist=10)
->>>>>>> 78f907e035ca58e86cf94726df55fb61ccaa4fdb
+	
 	print indexes
 	peak_freqs = freqs[indexes] 
 	peak_amps = freq_amps[indexes]
