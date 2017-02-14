@@ -5,7 +5,10 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from daqai import DAQmx_ReadAI as ReadAI
+try:
+	from daqai import DAQmx_ReadAI as ReadAI
+except:
+	print 'Cannot import daqai. Try using simulated mode instead?'
 
 class DataCaptThread(threading.Thread):
 	def __init__(self, simulated=False):
