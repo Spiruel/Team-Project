@@ -42,7 +42,7 @@ if __name__ == '__main__':
 	
 	data = np.loadtxt('Team 17/12V motor x axis ten minutes.csv', delimiter=',', comments='#')[:,1]#[:5000]
 
-	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1][:5000]
+	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1]#[:5000]
 	
 	fs = 1500
 	
