@@ -1,6 +1,6 @@
 import time
 import threading
-import sys
+import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RadioButtons
@@ -11,7 +11,7 @@ except:
 	print 'Cannot import daqai. Try using simulated mode instead?'
 
 class DataCaptThread(threading.Thread):
-	def __init__(self, simulated=False):
+	def __init__(self, filename='data/testinwater.csv', simulated=False):
 		threading.Thread.__init__(self)
 
 		self.DURATION = .05
@@ -28,6 +28,7 @@ class DataCaptThread(threading.Thread):
 		self.d1 = np.array([]); self.d2 = np.array([]); self.d3 = np.array([]) #should be queue
 		
 		self.running = True
+		self.filename = filename
 		self.simulated = simulated
 		
 		self.block_size = int(self.DURATION*self.SAMPLE_RATE)
@@ -45,7 +46,7 @@ class DataCaptThread(threading.Thread):
 			except KeyboardInterrupt:
 				sys.exit()
 		else:
-			full_data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
+			full_data = np.loadtxt(self.filename, delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
 			try:
 				i = 0
 				while self.running:
@@ -103,12 +104,14 @@ class Analysis():
 				self.line.set_color(colours[choice[0]])
 		self.fig.canvas.draw_idle()
 		
-
 	def show_data(self):
+		while np.isnan(np.std(self.data.d1)):
+			print 'Waiting to load data...'
+			while np.isnan(np.std(self.data.d1)):
+				pass
 	
 		import algorithms
 		mask = algorithms.median_absolute_deviation(self.data.d1[-self.data.block_size:])
-		#print np.array(range(len(self.data.d1)))[mask]
 			
 		if self.show_plots:
 		
@@ -149,21 +152,16 @@ class Analysis():
 			self.line.set_xdata(xs)
 			self.line.set_ydata(ys)
 				
+			self.ax.scatter(xs[-self.data.block_size:][mask], ys[-self.data.block_size:][mask])
 			# import Filters as F
 			# if not np.isnan(np.std(self.data.d1)):
 				# self.ax.plot(F.movingaverage(self.data.d1, 0.01*data_capture.block_size), 'k--')
 
-			#self.ax.plot(np.array(range(len(self.data.d1)))[mask], self.data.d1[mask], 'ro') #plot x against y
-
-			
 			win_size = self.data.SAMPLE_RATE*self.data.DURATION*10
 			self.ax.set_xlim([0, win_size])
 			if len(self.data.d1) >= win_size:
 				self.ax.set_xlim([len(self.data.d1)-win_size, len(self.data.d1)])
 			plt.pause(0.05)
-			
-			if np.isnan(np.std(self.data.d1)): print 'Waiting for plot data...'
-		
 
 if __name__ == "__main__":
 
@@ -171,13 +169,28 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(description='Control simulation or plotting optoions')
 	parser.add_argument('-p', '--plot', action='store_true', help='enables plot view')
-	parser.add_argument('-s', '--simulated', action='store_true', help='enables simulation')
+	# parser.add_argument('-s', '--simulated', action='store_true', help='enables simulation')
+	parser.add_argument('-s', '--simulated', type=str, nargs='*', help='file for simulated input', required=False, default='default')
+
 	args = parser.parse_args()
 	
-	if args.simulated:
-		data_capture = DataCaptThread(simulated=True)
-	else:
+	input = args.simulated
+	capturing = False
+	if input == 'default':
 		data_capture = DataCaptThread()
+	else:
+		if len(input) == 1:
+			input = input[0]
+			if input[-4:] != '.csv': 
+				input += '.csv'
+			if os.path.isfile('data/'+input):
+				filename = input
+				print 'Found file,', input + ', choosing it for input...'
+				data_capture = DataCaptThread(filename='data/'+filename, simulated=True)
+				capturing = True
+		if not capturing:
+			print 'Couldn\'t find file,', input + ', choosing default input file...'
+			data_capture = DataCaptThread(simulated=True)
 	
 	data_capture.start()
 	analysis = Analysis(data_capture, args.plot)
