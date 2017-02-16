@@ -3,6 +3,7 @@ import threading
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import RadioButtons
 import argparse
 try:
 	from daqai import DAQmx_ReadAI as ReadAI
@@ -23,6 +24,7 @@ class DataCaptThread(threading.Thread):
 		self.NCHANS = 3			# number of analog input channels
 		self.VMax = 10.0			# Maximum input voltage
 		
+		self.data = np.array([])
 		self.d1 = np.array([]); self.d2 = np.array([]); self.d3 = np.array([]) #should be queue
 		
 		self.running = True
@@ -34,26 +36,26 @@ class DataCaptThread(threading.Thread):
 		if not self.simulated:
 			try:
 				while self.running:
-					data = ReadAI(self.DURATION, chanlist=self.AICHANNELS, nchans=self.NCHANS, samplerate=self.SAMPLE_RATE, vrange=self.VMax)
+					self.data = ReadAI(self.DURATION, chanlist=self.AICHANNELS, nchans=self.NCHANS, samplerate=self.SAMPLE_RATE, vrange=self.VMax)
 
-					self.d1 = np.concatenate((self.d1, data[:,0]))
-					self.d2 = np.concatenate((self.d2, data[:,1]))
-					self.d3 = np.concatenate((self.d3, data[:,2]))
+					self.d1 = np.concatenate((self.d1, self.data[:,0]))
+					self.d2 = np.concatenate((self.d2, self.data[:,1]))
+					self.d3 = np.concatenate((self.d3, self.data[:,2]))
 
 			except KeyboardInterrupt:
 				sys.exit()
 		else:
-			full_data = np.loadtxt('data/mondaylongruntest.csv', delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
+			full_data = np.loadtxt('data/thursday_16test.csv', delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
 			try:
 				i = 0
 				while self.running:
 					
-					data = full_data[i:i+self.block_size]
+					self.data = full_data[i:i+self.block_size]
 					i += self.block_size
 					time.sleep(self.DURATION)
-					self.d1 = np.concatenate((self.d1, data[:,0]))
-					self.d2 = np.concatenate((self.d2, data[:,1]))
-					self.d3 = np.concatenate((self.d3, data[:,2]))
+					self.d1 = np.concatenate((self.d1, self.data[:,0]))
+					self.d2 = np.concatenate((self.d2, self.data[:,1]))
+					self.d3 = np.concatenate((self.d3, self.data[:,2]))
 
 			except KeyboardInterrupt:
 				sys.exit()
@@ -67,28 +69,100 @@ class Analysis():
 		
 		self.show_plots = plot
 		
-		if self.show_plots:
+		if self.show_plots:	
+			self.active_plots = [0]
+			
+			self.fig = plt.figure()
+
+			# Draw the plot
+			self.ax = self.fig.add_subplot(111)
+			self.fig.subplots_adjust(left=0.25)
+			
 			plt.ion()
-			plt.ylim([-0.6,0.6])
-			plt.ylabel('Amplitude / V')
-			plt.xlabel('Samples')
+			self.ax.set_ylim([-0.6,0.6])
+			self.ax.set_ylabel('Amplitude / V')
+			self.ax.set_xlabel('Samples')
 		
+			[self.line] = self.ax.plot([0], [0], 'r-')
+			[self.line1] = self.ax.plot([0], [0], 'g-')
+			[self.line2] = self.ax.plot([0], [0], 'b-')
+			
+			# Add a set of radio buttons for changing color
+			self.color_radios_ax = self.fig.add_axes([0.025, 0.5, 0.1, 0.35], axisbg='lightgoldenrodyellow')
+			self.color_radios = RadioButtons(self.color_radios_ax, ('0', '1', '2', '0,1,2'), active=0) #need to add '0,1', '0,2', '1,2', '0,1,2'
+			self.color_radios.on_clicked(self.color_radios_on_clicked)
+			
+	def color_radios_on_clicked(self, choice):
+		colours = {0:'r', 1:'g', 2:'b'}
+		
+		choice = [int(i[-1]) for i in choice.split(',')]
+		if choice != self.active_plots:
+			self.active_plots = choice
+			
+			if len(choice) == 1:
+				self.line.set_color(colours[choice[0]])
+		self.fig.canvas.draw_idle()
+		
+
 	def show_data(self):
+	
+		import algorithms
+		mask = algorithms.median_absolute_deviation(self.data.d1[-self.data.block_size:])
+		#print np.array(range(len(self.data.d1)))[mask]
+			
 		if self.show_plots:
-			# plt.plot(self.data.d1, 'r-'); plt.plot(self.data.d2, 'g-', label='y'); plt.plot(self.data.d3, 'b-', label='z')
-			import Filters as F
-			if not np.isnan(np.std(self.data.d1)):
-				plt.plot(F.movingaverage(self.data.d1, 0.01*data_capture.block_size), 'k--')
+		
+			active_plots = set(self.active_plots)
+			if active_plots == set([0]):
+				ys = self.data.d1
+			if active_plots == set([1]):
+				ys = self.data.d2
+			if active_plots == set([2]):
+				ys = self.data.d3
+			if set([0,1]) == active_plots: #multi choice doesnt work yet
+				ys = self.data[:,[0, 1]]
+			if set([0,2]) == active_plots:
+				ys = self.data[:,[0, 2]]
+			if set([1,2]) == active_plots:
+				ys = self.data[:,[1, 2]]
+			
+			if set([0,1,2]) != active_plots:
+				size = len(ys)
+				xs = np.linspace(0, size, size)			
+			else:
+				ys = self.data.d2
+				size = len(ys)
+				xs = np.linspace(0, size, size)
+				self.line1.set_xdata(xs)
+				self.line1.set_ydata(ys)
+				
+				ys = self.data.d3
+				size = len(ys)
+				xs = np.linspace(0, size, size)
+				self.line2.set_xdata(xs)
+				self.line2.set_ydata(ys)
+				
+				ys = self.data.d1
+				size = len(ys)
+				xs = np.linspace(0, size, size)
+			
+			self.line.set_xdata(xs)
+			self.line.set_ydata(ys)
+				
+			# import Filters as F
+			# if not np.isnan(np.std(self.data.d1)):
+				# self.ax.plot(F.movingaverage(self.data.d1, 0.01*data_capture.block_size), 'k--')
+
+			#self.ax.plot(np.array(range(len(self.data.d1)))[mask], self.data.d1[mask], 'ro') #plot x against y
 
 			
 			win_size = self.data.SAMPLE_RATE*self.data.DURATION*10
-			plt.xlim([0, win_size])
+			self.ax.set_xlim([0, win_size])
 			if len(self.data.d1) >= win_size:
-				plt.xlim([len(self.data.d1)-win_size, len(self.data.d1)])
+				self.ax.set_xlim([len(self.data.d1)-win_size, len(self.data.d1)])
 			plt.pause(0.05)
-		
-		block_len = self.data.DURATION*self.data.SAMPLE_RATE
-		print 'Channel 1 std :', np.std(self.data.d1[-block_len:])
+			
+			if np.isnan(np.std(self.data.d1)): print 'Waiting for plot data...'
 		
 
 if __name__ == "__main__":
