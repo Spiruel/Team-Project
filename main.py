@@ -45,7 +45,7 @@ class DataCaptThread(threading.Thread):
 			except KeyboardInterrupt:
 				sys.exit()
 		else:
-			full_data = np.loadtxt('data/thursday_16test.csv', delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
+			full_data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
 			try:
 				i = 0
 				while self.running:
