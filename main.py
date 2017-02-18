@@ -112,6 +112,8 @@ class Analysis():
 	
 		import algorithms
 		mask = algorithms.median_absolute_deviation(self.data.d1[-self.data.block_size:])
+		if len(mask[0]) > 0: 
+			print 'Anomaly alert!'
 			
 		if self.show_plots:
 		
@@ -185,11 +187,11 @@ if __name__ == "__main__":
 				input += '.csv'
 			if os.path.isfile('data/'+input):
 				filename = input
-				print 'Found file,', input + ', choosing it for input...'
+				print 'Found file,', str(input) + ', choosing it for input...'
 				data_capture = DataCaptThread(filename='data/'+filename, simulated=True)
 				capturing = True
 		if not capturing:
-			print 'Couldn\'t find file,', input + ', choosing default input file...'
+			print 'Couldn\'t find file,', str(input) + ', choosing default input file...'
 			data_capture = DataCaptThread(simulated=True)
 	
 	data_capture.start()
