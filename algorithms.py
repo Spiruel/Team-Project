@@ -3,6 +3,8 @@ import pandas
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
+import Filters
+import Audio_waveform
 
 def median_absolute_deviation(timeseries):
     """
@@ -72,17 +74,20 @@ def stddev_from_moving_average(timeseries):
     deviations of the moving average. This is better for finding anomalies with
     respect to the short term trends.
     """
-    timeseries_av = Filters.movingaverage(timeseries,50)
+    #timeseries_av = Filters.movingaverage(timeseries,50)
     
-    diff = np.abs(timeseries - timeseries_av)
+    #diff = np.abs(timeseries - timeseries_av)
 
-    #series = pandas.Series(timeseries)
-    #expAverage = pandas.stats.moments.ewma(series, com=50)
-    #stdDev = pandas.stats.moments.ewmstd(series, com=50)
+    series = pandas.Series(timeseries)
+    expAverage = pandas.stats.moments.ewma(series, com=50)
+    stdDev = pandas.stats.moments.ewmstd(series, com=50)
+
+    indices_bool = abs(series - expAverage) > 3 * stdDev
+
+    indices = np.array(series.index[indices_bool == True])
 
 
-
-    return abs(series.iget(-1) - expAverage.iget(-1)) > 2 * stdDev.iget(-1)
+    return indices
 
 
 if __name__ == '__main__':
@@ -90,14 +95,12 @@ if __name__ == '__main__':
     data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1]
     fs = 3000
 
-    import Filters
 
     data_lowpass = Filters.movingaverage(data,50)
     
-    anomaly_indices = five_sigma(data_lowpass)
-    print anomaly_indices
+    anomaly_indices = stddev_from_moving_average(data_lowpass)
+    #print anomaly_indices
 
-    import Audio_waveform
     times = Audio_waveform.waveform(data_lowpass,fs)[0]
 
     anom_amplitudes = data_lowpass[anomaly_indices]
