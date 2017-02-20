@@ -112,8 +112,10 @@ class Analysis():
 					pass
 	
 		import algorithms
-		mask = algorithms.median_absolute_deviation(self.data.d1[-self.data.block_size:])
-		if len(mask[0]) > 0: 
+		med_abs_dev_mask = algorithms.median_absolute_deviation(self.data.d1[-self.data.block_size:])
+		dev_mov_av_mask = algorithms.stddev_from_moving_average(self.data.d1[-self.data.block_size:])
+		mask = dev_mov_av_mask
+		if len(med_abs_dev_mask) > 0 or len(dev_mov_av_mask) > 0: 
 			print 'Anomaly alert!'
 			
 		if self.show_plots:

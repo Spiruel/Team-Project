@@ -23,14 +23,14 @@ def median_absolute_deviation(timeseries):
 	# The test statistic is infinite when the median is zero,
 	# so it becomes super sensitive. We play it safe and skip when this happens.
 
-	anomalies = np.where(normalised_median_deviation > 6)
+	anomalies = np.where(normalised_median_deviation > 6)[0]
 
 	# Completely arbitary...triggers if the median deviation is
 	# 6 times bigger than the median
 	return anomalies
 
 
-def grubbs(timereies):
+def grubbs(timeseries):
     """
     A timeseries is anomalous if the Z score is greater than the Grubb's score.
     2 sided Grubbs test.
@@ -46,7 +46,7 @@ def grubbs(timereies):
     grubbs_score = ((len_series - 1) / np.sqrt(len_series)) * np.sqrt(threshold_squared / (len_series - 2 + threshold_squared))
     #if any data point deviates from the mean by more than the Grubbs score, then it is classed as an outlier. 
 
-    anomalies = np.where(z_score > grubbs_score)
+    anomalies = np.where(z_score > grubbs_score)[0]
 
     return anomalies
 
@@ -78,10 +78,10 @@ def stddev_from_moving_average(timeseries):
     #diff = np.abs(timeseries - timeseries_av)
 
     series = pandas.Series(timeseries)
-    expAverage = pandas.stats.moments.ewma(series, com=50)
-    stdDev = pandas.stats.moments.ewmstd(series, com=50)
+    expAverage = series.rolling(window=50,center=False).mean()
+    stdDev = series.rolling(window=50,center=False).std()
 
-    indices_bool = abs(series - expAverage) > 3 * stdDev
+    indices_bool = abs(series - expAverage) > 4 * stdDev
 
     indices = np.array(series.index[indices_bool == True])
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     data_lowpass = Filters.movingaverage(data,50)
     
     anomaly_indices = stddev_from_moving_average(data_lowpass)
-    #print anomaly_indices
+    print anomaly_indices
 
     times = Audio_waveform.waveform(data_lowpass,fs)[0]
 
