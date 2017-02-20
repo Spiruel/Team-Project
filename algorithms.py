@@ -7,27 +7,27 @@ import Filters
 import Audio_waveform
 
 def median_absolute_deviation(timeseries):
-    """
-    A timeseries is anomalous if the deviation of its latest datapoint with
-    respect to the median is X times larger than the median of deviations.
-    """
-    data_median = np.median(timeseries)
-    demedianed = np.abs(timeseries - data_median)
-    median_deviation = np.median(demedianed)
+	"""
+	A timeseries is anomalous if the deviation of its latest datapoint with
+	respect to the median is X times larger than the median of deviations.
+	"""
+	data_median = np.median(timeseries)
+	demedianed = np.abs(timeseries - data_median)
+	median_deviation = np.median(demedianed)
 
-    if median_deviation == 0:
-        return False
+	if median_deviation == 0:
+		return False
 
-    normalised_median_deviation = demedianed / median_deviation
+	normalised_median_deviation = demedianed / median_deviation
 
-    # The test statistic is infinite when the median is zero,
-    # so it becomes super sensitive. We play it safe and skip when this happens.
+	# The test statistic is infinite when the median is zero,
+	# so it becomes super sensitive. We play it safe and skip when this happens.
 
-    anomalies = np.where(normalised_median_deviation > 10)
+	anomalies = np.where(normalised_median_deviation > 6)
 
-    # Completely arbitary...triggers if the median deviation is
-    # 6 times bigger than the median
-    return anomalies
+	# Completely arbitary...triggers if the median deviation is
+	# 6 times bigger than the median
+	return anomalies
 
 
 def grubbs(timereies):
@@ -57,7 +57,6 @@ def five_sigma(timeseries):
     """
     data = np.abs(timeseries)
     mean = np.mean(timeseries)
-    print mean
     stdDev = np.std(timeseries)
 
     norm_resids = np.abs(timeseries - mean) / stdDev
