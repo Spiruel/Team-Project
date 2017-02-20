@@ -105,10 +105,11 @@ class Analysis():
 		self.fig.canvas.draw_idle()
 		
 	def show_data(self):
-		while np.isnan(np.std(self.data.d1)):
-			print 'Waiting to load data...'
+		if self.data.simulated:
 			while np.isnan(np.std(self.data.d1)):
-				pass
+				print 'Waiting to load data...'
+				while np.isnan(np.std(self.data.d1)):
+					pass
 	
 		import algorithms
 		mask = algorithms.median_absolute_deviation(self.data.d1[-self.data.block_size:])
