@@ -3,10 +3,9 @@ import numpy as np
 from scipy import signal
 from scipy.fftpack import fft
 from scipy.optimize import leastsq
+import Filters
 import operator
-#import Filters
 from scipy.signal import butter, lfilter
-
 
 '''
 Function to return the half-width half-maximum, peak centre and peak intensity
@@ -23,7 +22,7 @@ def lorentz_params(data):
     frequency = frequency[range(n/2)]
     lowcut = 100
     Y = fourier_transform(amplitude, sample_rate, lowcut)
-    Y_av = movingaverage(Y, 15)    
+    Y_av = Filters.movingaverage(Y, 15)    
     p = [0.010, peak_finder(frequency, Y_av, sample_rate)[0], peak_finder(frequency, Y_av, sample_rate)[1]] #hwhm, peak centre, intensity    
         
     pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
@@ -31,7 +30,6 @@ def lorentz_params(data):
     maxindex_Y, maxvalue_Y = max(enumerate(Y_av), key=operator.itemgetter(1))
     p_new = (best_parameters[0], best_parameters[1], maxvalue_Y)
     return p_new
-    
     
 '''
 Function to return a set of parameters used throughout the rest of the code
@@ -47,9 +45,8 @@ def params(data):
     frequency = frequency[range(n/2)]
     lowcut = 100
     Y = fourier_transform(amplitude, sample_rate, lowcut)
-    Y_av = movingaverage(Y, 15) 
+    Y_av = Filters.movingaverage(Y, 15) 
     return frequency, sample_rate, Y_av
-
 
 '''
 Functions to return a highpassed data set to reduce noise from lower frequencies
@@ -60,12 +57,10 @@ def butter_highpass(lowcut, sample_rate, order=5):
     b, a = butter(order, low, btype ='high')
     return b, a
     
-    
 def butter_highpass_filter(data, lowcut, sample_rate, order=5):
     b, a = butter_highpass(lowcut, sample_rate, order)
     y = lfilter(b, a, data)
     return y
-    
 
 '''
 Function to return the intensity of the wave at certain amplitudes in 
@@ -77,14 +72,12 @@ def fourier_transform(amplitude, sample_rate, lowcut):
     Y = abs(Y[range(len(amplitude)/2)])
     return Y
 
-
 '''
 Function returning the location and intensity of the peak in the data
 '''
 def peak_finder(frequency, Y_av, sample_rate):
     maxindex_Y, maxvalue_Y = max(enumerate(Y_av), key=operator.itemgetter(1))
     return frequency[maxindex_Y], maxvalue_Y
-
 
 '''
 Function returns the Lorentzian fit on the parameters supplied
@@ -95,7 +88,6 @@ def lorentzian(frequency, p):
     YL = p[2] * (num / denom)
     return YL
     
-
 '''
 Function used to optimise the Lorentzian parameters
 '''
@@ -103,7 +95,6 @@ def residuals(p, Y_av, frequency):
     err = Y_av - lorentzian(frequency, p)
     return err
     
-
 '''
 Function to return the background noise of the data
 '''
@@ -117,7 +108,6 @@ def background_subtraction(Y_av, frequency):
     Y_bg_corr = Y_av - background
     return background, Y_bg_corr
 
-
 '''
 Performs a Lorentzian fit using optimized parameters using least squares
 '''
@@ -127,14 +117,7 @@ def optimization(frequency, p, Y_av, sample_rate):
     p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency)[0])
     fit = lorentzian(frequency, p_new)
     return fit
-    
-    
-def movingaverage(interval, window_size):
-    window = np.ones(int(window_size))/float(window_size)
-    return np.convolve(interval, window, 'same')
-	
-
-
+     
 if __name__ == '__main__':
     data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 
@@ -147,17 +130,3 @@ if __name__ == '__main__':
     plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0])[0], 'r-', lw=2, label = 'Optimized fit')
     plt.legend()
     plt.show()
-    
-    '''
-#    plt.plot(params(data)[0], fourier_transform(amplitude, sample_rate, lowcut), label = 'Data')
-    plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
-    plt.plot(params(data)[0], fourier_transform(data[:,1], 1500, 100), label = 'Raw data')
-#    plt.plot(params(data)[0], background_subtraction(frequency)[0], label = 'Background')
-    
-    plt.scatter(peak_finder(params(data)[0], params(data)[2], params(data)[1])[0], peak_finder(params(data)[0], params(data)[2], params(data)[1])[1], c = 'r', alpha = 0.5)
-    plt.xlabel(r'$\omega$ $(cm^{-1})$', fontsize = 18)
-    plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
-    plt.xlim(0,)
-    plt.ylim(0,)
-    plt.legend()
-    plt.show()'''
