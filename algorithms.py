@@ -73,9 +73,6 @@ def stddev_from_moving_average(timeseries):
     deviations of the moving average. This is better for finding anomalies with
     respect to the short term trends.
     """
-    #timeseries_av = Filters.movingaverage(timeseries,50)
-    
-    #diff = np.abs(timeseries - timeseries_av)
 
     series = pandas.Series(timeseries)
     expAverage = series.rolling(window=50,center=False).mean()
@@ -97,7 +94,7 @@ if __name__ == '__main__':
 
     data_lowpass = Filters.movingaverage(data,50)
     
-    anomaly_indices = stddev_from_moving_average(data_lowpass)
+    anomaly_indices = grubbs(data_lowpass)
     print anomaly_indices
 
     times = Audio_waveform.waveform(data_lowpass,fs)[0]
@@ -108,4 +105,7 @@ if __name__ == '__main__':
     plt.plot(times,data)
     plt.plot(times,data_lowpass)
     plt.plot(anom_times,anom_amplitudes,'ro',markersize = 10)
+
+    plt.xlabel('Time/s')
+    plt.ylabel('Amplitude')
     plt.show()

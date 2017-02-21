@@ -2,6 +2,7 @@ import numpy as np
 from scipy.signal import butter, lfilter, freqz, filtfilt
 import matplotlib.pyplot as plt
 import Audio_waveform as am
+import pandas
 
 
 def butter_lowpass(cutoff, fs, order=5):
@@ -38,6 +39,20 @@ def movingaverage(interval, window_size):
 	window = np.ones(int(window_size))/float(window_size)
 	return np.convolve(interval, window, 'same')
 
+def rolling_average(data, window_size):
+	dataseries = pandas.Series(data)
+	rolling_data = dataseries.rolling(window=window_size,center=False).mean()
+	rolling_data = np.array(rolling_data)
+
+	return rolling_data
+
+def rolling_std(data, window_size):
+	dataseries = pandas.Series(data)
+	rolling_std = dataseries.rolling(window=window_size,center=False).std()
+	rolling_std = np.array(rolling_std)
+
+	return rolling_std
+
 
 
 if __name__ == '__main__':
@@ -55,7 +70,7 @@ if __name__ == '__main__':
 	
 	times, amplitudes = am.waveform(data, fs)
 	
-	average = movingaverage(amplitudes,10)
+	average = rolling_average(amplitudes,50)
 	
 	plt.plot(times,amplitudes)
 	plt.plot(times,average)
