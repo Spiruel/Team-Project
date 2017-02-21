@@ -112,11 +112,11 @@ def background_subtraction(Y_av, frequency, sample_rate):
 Performs a Lorentzian fit using optimized parameters using least squares
 '''
 def optimization(frequency, p, Y_av, sample_rate):
-    pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
-    best_parameters = pbest[0]
-    p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency, sample_rate)[0])
-    fit = lorentzian(frequency, p_new)
-    return fit
+	pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
+	best_parameters = pbest[0]
+	p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency, sample_rate)[0])
+	fit = lorentzian(frequency, p_new)
+	return fit
      
 if __name__ == '__main__':
 	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
@@ -128,7 +128,6 @@ if __name__ == '__main__':
 	plt.plot(params(data)[0], fourier_transform(data[:,0], 1500, 100), label = 'Raw data')
 	plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
 	plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0], params(data)[1])[0], 'r-', lw=2, label = 'Optimized fit')
-	plt.xlim(0, 750)
 	plt.xlabel(r'$\omega$ $(cm^{-1})$', fontsize = 18)    
 	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
 	plt.legend()
