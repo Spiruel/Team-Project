@@ -11,12 +11,13 @@ def median_absolute_deviation(timeseries):
 	A timeseries is anomalous if the deviation of its latest datapoint with
 	respect to the median is X times larger than the median of deviations.
 	"""
-	data_median = np.median(timeseries)
+	data_median = np.median(timeseries, axis=0)
 	demedianed = np.abs(timeseries - data_median)
-	median_deviation = np.median(demedianed)
+	median_deviation = np.median(demedianed, axis=0)
+	
 
-	if median_deviation == 0:
-		return False
+	#if median_deviation == 0:
+	#	return False
 
 	normalised_median_deviation = demedianed / median_deviation
 
@@ -25,10 +26,11 @@ def median_absolute_deviation(timeseries):
 
 	anomalies = np.where(normalised_median_deviation > 6)[0]
 
+	anomalies = np.array([np.where(column > 6)[0] for column in normalised_median_deviation.T])
+
 	# Completely arbitary...triggers if the median deviation is
 	# 6 times bigger than the median
 	return anomalies
-
 
 def grubbs(timeseries):
     """
