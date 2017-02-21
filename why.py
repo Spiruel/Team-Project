@@ -77,7 +77,7 @@ Function returning the location and intensity of the peak in the data
 '''
 def peak_finder(frequency, Y_av, sample_rate):
     maxindex_Y, maxvalue_Y = max(enumerate(Y_av), key=operator.itemgetter(1))
-    return frequency[maxindex_Y], maxvalue_Y
+    return frequency[maxindex_Y], maxvalue_Y, maxindex_Y
 
 '''
 Function returns the Lorentzian fit on the parameters supplied
@@ -98,9 +98,9 @@ def residuals(p, Y_av, frequency):
 '''
 Function to return the background noise of the data
 '''
-def background_subtraction(Y_av, frequency):
-    ind_bg_low = (frequency > min(frequency)) & (frequency < 299.0) #defining background
-    ind_bg_high = (frequency > 301.25) & (frequency < max(frequency))
+def background_subtraction(Y_av, frequency, sample_rate):
+    ind_bg_low = (frequency > min(frequency)) & (frequency < frequency[peak_finder(frequency, Y_av, sample_rate)[2]]-200) #defining background
+    ind_bg_high = (frequency > frequency[peak_finder(frequency, Y_av, sample_rate)[2]]+200) & (frequency < max(frequency))
     frequency_bg = np.concatenate((frequency[ind_bg_low], frequency[ind_bg_high]))
     Y_bg = np.concatenate((Y_av[ind_bg_low], Y_av[ind_bg_high]))
     m, c = np.polyfit(frequency_bg, Y_bg, 1)
@@ -114,19 +114,22 @@ Performs a Lorentzian fit using optimized parameters using least squares
 def optimization(frequency, p, Y_av, sample_rate):
     pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
     best_parameters = pbest[0]
-    p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency)[0])
+    p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency, sample_rate)[0])
     fit = lorentzian(frequency, p_new)
     return fit
      
 if __name__ == '__main__':
-    data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
+	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 
-    print lorentz_params(data)
+	print lorentz_params(data)
 #    hwhm, peak_cen, peak_inten = lorentz_params(data)
 #    xs = np.linspace(0,700,100)
 #    plt.plot(xs, lorentzian(xs, (hwhm, peak_cen, peak_inten)))
-    plt.plot(params(data)[0], fourier_transform(data[:,0], 1500, 100), label = 'Raw data')
-    plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
-    plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0])[0], 'r-', lw=2, label = 'Optimized fit')
-    plt.legend()
-    plt.show()
+	plt.plot(params(data)[0], fourier_transform(data[:,0], 1500, 100), label = 'Raw data')
+	plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
+	plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0], params(data)[1])[0], 'r-', lw=2, label = 'Optimized fit')
+	plt.xlim(0, 750)
+	plt.xlabel(r'$\omega$ $(cm^{-1})$', fontsize = 18)    
+	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
+	plt.legend()
+plt.show()
