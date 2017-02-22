@@ -24,68 +24,69 @@ def median_absolute_deviation(timeseries):
 	# The test statistic is infinite when the median is zero,
 	# so it becomes super sensitive. We play it safe and skip when this happens.
 
-	anomalies = np.where(normalised_median_deviation > 6)[0]
-
+	#anomalies = np.where(normalised_median_deviation > 6)[0]
 	anomalies = np.array([np.where(column > 6)[0] for column in normalised_median_deviation.T])
-
 	# Completely arbitary...triggers if the median deviation is
 	# 6 times bigger than the median
 	return anomalies
 
 def grubbs(timeseries):
-    """
-    A timeseries is anomalous if the Z score is greater than the Grubb's score.
-    2 sided Grubbs test.
-    """
+	"""
+	A timeseries is anomalous if the Z score is greater than the Grubb's score.
+	2 sided Grubbs test.
+	"""
 
-    stdDev = np.std(timeseries)
-    mean = np.mean(timeseries)
-    z_score = np.abs(timeseries - mean) / stdDev #normalised residuals
-    len_series = len(timeseries)
-    threshold = scipy.stats.t.isf(0.05 / (2 * len_series), len_series - 2) 
-    #upper critical values of the t distrubution with N - 2 degrees of freedo and a significance level of alpha/2N
-    threshold_squared = threshold * threshold
-    grubbs_score = ((len_series - 1) / np.sqrt(len_series)) * np.sqrt(threshold_squared / (len_series - 2 + threshold_squared))
-    #if any data point deviates from the mean by more than the Grubbs score, then it is classed as an outlier. 
+	stdDev = np.std(timeseries, axis=0)
+	mean = np.mean(timeseries, axis=0)
+	z_score = np.abs(timeseries - mean) / stdDev #normalised residuals
+	len_series = timeseries.shape[0]
+	threshold = scipy.stats.t.isf(0.05 / (2 * len_series), len_series - 2) 
+	#upper critical values of the t distribution with N - 2 degrees of freedo and a significance level of alpha/2N
+	threshold_squared = threshold ** 2
+	grubbs_score = ((len_series - 1) / np.sqrt(len_series)) * np.sqrt(threshold_squared / (len_series - 2 + threshold_squared))
+	#if any data point deviates from the mean by more than the Grubbs score, then it is classed as an outlier. 
 
-    anomalies = np.where(z_score > grubbs_score)[0]
+	#anomalies = np.where(z_score[:,0] > grubbs_score)[0]
+	anomalies = np.array([np.where(column > grubbs_score)[0] for column in z_score.T])
 
-    return anomalies
+	return anomalies
 
 def five_sigma(timeseries):
-    """
-    A timeseries is anomalous if the average of the last three datapoints
-    are outside of five standard deviations of the mean.
-    """
-    data = np.abs(timeseries)
-    mean = np.mean(timeseries)
-    stdDev = np.std(timeseries)
+	"""
+	A timeseries is anomalous if the average of the last three datapoints
+	are outside of five standard deviations of the mean.
+	"""
+	data = np.abs(timeseries)
+	mean = np.mean(timeseries, axis=0)
+	stdDev = np.std(timeseries, axis=0)
 
-    norm_resids = np.abs(timeseries - mean) / stdDev
+	norm_resids = np.abs(timeseries - mean) / stdDev
 
-    anomalies = np.where(norm_resids > 5)[0]
-
-    return anomalies
+	#anomalies = np.where(norm_resids > 5)[0]
+	anomalies = np.array([np.where(column > 5)[0] for column in norm_resids.T])
+	
+	return anomalies
 
 
 def stddev_from_moving_average(timeseries):
-    """
-    A timeseries is anomalous if the absolute value of the average of the latest
-    three datapoint minus the moving average is greater than three standard
-    deviations of the moving average. This is better for finding anomalies with
-    respect to the short term trends.
-    """
+	"""
+	A timeseries is anomalous if the absolute value of the average of the latest
+	three datapoint minus the moving average is greater than three standard
+	deviations of the moving average. This is better for finding anomalies with
+	respect to the short term trends.
+	"""
 
-    series = pandas.Series(timeseries)
-    expAverage = series.rolling(window=50,center=False).mean()
-    stdDev = series.rolling(window=50,center=False).std()
+	series = pandas.DataFrame(timeseries)
+	expAverage = series.rolling(window=50,center=False).mean()
+	stdDev = series.rolling(window=50,center=False).std()
 
-    indices_bool = abs(series - expAverage) > 4 * stdDev
+	indices_bool = np.abs(series - expAverage) > 4 * stdDev
 
-    indices = np.array(series.index[indices_bool == True])
+	# indices = np.where(indices_bool)
+	indices = np.array([np.where(column)[0] for column in indices_bool.T])
 
 
-    return indices
+	return indices
 
 
 if __name__ == '__main__':
