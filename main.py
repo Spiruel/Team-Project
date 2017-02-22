@@ -84,7 +84,7 @@ class Analysis():
 		self.show_plots = plot
 		
 		if self.show_plots:	
-			self.win_size = self.data.SAMPLE_RATE*self.data.DURATION*10 #define window size of plot area
+			self.win_size = self.data.SAMPLE_RATE*self.data.DURATION*20 #define window size of plot area
 			
 			self.active_plots = [0]
 			
@@ -103,6 +103,7 @@ class Analysis():
 			self.ax1.set_xlabel('Samples')
 			self.ax.get_xaxis().set_ticks([])
 			self.ax.set_xlim([0, self.win_size])
+			self.ax1.set_xlim([0, self.win_size])
 		
 			[self.line] = self.ax.plot([0], [0], 'r-')
 			[self.line1] = self.ax.plot([0], [0], 'g-')
