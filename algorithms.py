@@ -47,7 +47,7 @@ def grubbs(timeseries):
 		return np.array([np.array([]) for column in timeseries.T])
 	grubbs_score = ((len_series - 1) / np.sqrt(len_series)) * np.sqrt(threshold_squared / (len_series - 2 + threshold_squared))
 	#if any data point deviates from the mean by more than the Grubbs score, then it is classed as an outlier. 
-	grubbs_score = 0
+
 	#anomalies = np.where(z_score[:,0] > grubbs_score)[0]
 	anomalies = np.array([np.where(column > grubbs_score)[0] for column in z_score.T])
 
@@ -124,15 +124,16 @@ if __name__ == '__main__':
 	times = Audio_waveform.waveform(data_lowpass,fs)[0]
 
 	if anomaly_indices != []:
-		anom_amplitudes = [data_lowpass[:,i][anomaly_indices[:,i]] for i in range(len(data_lowpass.T))]
-		anom_times = [times[anomaly_indices[:,i]] for i in range(len(data_lowpass.T))]
+		print data_lowpass.shape, anomaly_indices.shape, anomaly_indices
+		anom_amplitudes = [data_lowpass[:,i][anomaly_indices[i]] for i in range(len(data_lowpass.T))]
+		anom_times = [times[anomaly_indices[i]] for i in range(len(data_lowpass.T))]
 	else:
 		anom_amplitudes = np.array([])
 		anom_times = np.array([])
 		
 	plt.plot(times,data)
 	plt.plot(times,data_lowpass)
-	plt.plot(anom_times,anom_amplitudes,'ro',markersize = 10)
+	[plt.plot(anom_times[i],anom_amplitudes[i],'ro',markersize = 10) for i in range(len(data_lowpass.T))]
 
 	plt.xlabel('Time/s')
 	plt.ylabel('Amplitude')
