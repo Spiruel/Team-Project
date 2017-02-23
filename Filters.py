@@ -57,19 +57,19 @@ if __name__ == '__main__':
 	
 	# Filter requirements.
 	order = 6
-	fs = 1500      # sample rate, Hz
+	fs = 3000      # sample rate, Hz
 	cutoff = 50  # desired cutoff frequency of the filter, Hz
 	
-	data = np.loadtxt('Team 17/12V motor x axis ten minutes.csv', delimiter=',', comments='#')[:,1][:5000]
+	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,0]
 
 	#y = butter_lowpass_filter(data, cutoff, fs, order)
 	
-	print (cutoff,fs,order)
+	times = am.times(data, fs)
 	
-	times, amplitudes = am.waveform(data, fs)
+	average = rolling_average(data,50)
+
+	print average
 	
-	average = rolling_average(amplitudes,50)
-	
-	plt.plot(times,amplitudes)
+	plt.plot(times,data)
 	plt.plot(times,average)
 	plt.show()
