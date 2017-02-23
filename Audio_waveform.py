@@ -10,6 +10,11 @@ def waveform(data, fs = 1500):
 	return (time_array,data)
 	
 	
+def times(data, fs = 1500):
+	'''data is 1d array of amplitudes for a given time. fs is sampling frequency of the signal'''
+	data_len = len(data)
+	time_array = np.arange(data_len)/fs
+	return (time_array)
 	
 if __name__ == '__main__':
 
