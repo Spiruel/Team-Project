@@ -23,7 +23,7 @@ def lorentz_params(data):
     lowcut = 100
     Y = fourier_transform(amplitude, sample_rate, lowcut)
     Y_av = Filters.movingaverage(Y, 15)    
-    p = [0.010, peak_finder(frequency, Y_av, sample_rate)[0], peak_finder(frequency, Y_av, sample_rate)[1]] #hwhm, peak centre, intensity    
+    p = [10, peak_finder(frequency, Y_av, sample_rate)[0], peak_finder(frequency, Y_av, sample_rate)[1]] #hwhm, peak centre, intensity    
         
     pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
     best_parameters = pbest[0]
@@ -45,7 +45,7 @@ def params(data):
     frequency = frequency[range(n/2)]
     lowcut = 100
     Y = fourier_transform(amplitude, sample_rate, lowcut)
-    Y_av = Filters.movingaverage(Y, 15) 
+    Y_av = Filters.movingaverage(Y, 10) 
     return frequency, sample_rate, Y_av
 
 '''
@@ -99,8 +99,8 @@ def residuals(p, Y_av, frequency):
 Function to return the background noise of the data
 '''
 def background_subtraction(Y_av, frequency, sample_rate):
-    ind_bg_low = (frequency > min(frequency)) & (frequency < frequency[peak_finder(frequency, Y_av, sample_rate)[2]]-200) #defining background
-    ind_bg_high = (frequency > frequency[peak_finder(frequency, Y_av, sample_rate)[2]]+200) & (frequency < max(frequency))
+    ind_bg_low = (frequency > min(frequency)) & (frequency < frequency[peak_finder(frequency, Y_av, sample_rate)[2]]-20) #defining background
+    ind_bg_high = (frequency > frequency[peak_finder(frequency, Y_av, sample_rate)[2]]+20) & (frequency < max(frequency))
     frequency_bg = np.concatenate((frequency[ind_bg_low], frequency[ind_bg_high]))
     Y_bg = np.concatenate((Y_av[ind_bg_low], Y_av[ind_bg_high]))
     m, c = np.polyfit(frequency_bg, Y_bg, 1)
@@ -120,7 +120,6 @@ def optimization(frequency, p, Y_av, sample_rate):
      
 if __name__ == '__main__':
 	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
-
 	print lorentz_params(data)
 #    hwhm, peak_cen, peak_inten = lorentz_params(data)
 #    xs = np.linspace(0,700,100)
