@@ -88,6 +88,27 @@ def stddev_from_moving_average(timeseries):
 
 	return indices
 
+def dev_of_Lor(HWHM, peak_centre, intensity):
+    '''inputs are arrays of the three paramaters associated with the Lorentzian. These correspond tot he values of the paramters along each chunk
+    in time. e.g. these will be array of length 10 if the timeseries data used has been split into 10 chunks, and fourier analysis and Lorentzian
+    fitting applied to each of these chunks.
+    Returns an array of arrays. Each array consists of the index of the time chunk for which there is an anomalous result.
+    e.g. if the intensity of the peak for the 8th and 9th time chunk is anomalous, the function will return the array [[],[],[8,9]]'''
+
+    mean_HWHM = np.mean(HWHM)
+    mean_peak_centre = np.mean(peak_centre)
+    mean_intensity = np.mean(intensity)
+
+    HWHM_diff = HWHM - mean_HWHM
+    peak_centre_diff = peak_centre - mean_peak_centre
+    intensity_diff = intensity - mean_intensity
+
+    HWHM_anomalies = np.where(HWHM_diff > 2*np.std(HWHM))[0]
+    peak_centre_anomalies = np.where(peak_centre_diff > 2*np.std(peak_centre))[0]
+    intensity_anomalies = np.where(intensity_diff > 2*np.std(intensity))[0]
+
+    return (HWHM_anomalies,peak_centre_anomalies,intensity_anomalies)
+
 
 if __name__ == '__main__':
 
