@@ -105,7 +105,7 @@ def dev_of_Lor(HWHM, peak_centre, intensity):
     peak_centre_diff = peak_centre - mean_peak_centre
     intensity_diff = intensity - mean_intensity
 
-    HWHM_anomalies = np.where(HWHM_diff > 2*np.std(HWHM))[0]
+    HWHM_anomalies = np.where(HWHM_diff > 3*np.std(HWHM))[0]
     peak_centre_anomalies = np.where(peak_centre_diff > 2*np.std(peak_centre))[0]
     intensity_anomalies = np.where(intensity_diff > 2*np.std(intensity))[0]
 
@@ -114,10 +114,47 @@ def dev_of_Lor(HWHM, peak_centre, intensity):
 
 if __name__ == '__main__':
 
-	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
+	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
+	data = np.loadtxt('data/lorentz_teo.csv', delimiter=',', comments='#')
+
+	time_blocks = np.arange(0,len(data[:,0]),1)
+
 	fs = 3000
 
-	data_lowpass = np.column_stack((Filters.movingaverage(data[:,0],50), Filters.movingaverage(data[:,1],50), Filters.movingaverage(data[:,2],50)))
+	HWHM = data[:,0]
+	peak_centre = data[:,1]
+	intensity = data[:,2]
+
+	data_anoms = dev_of_Lor(HWHM,peak_centre,intensity)
+	print data_anoms
+
+	HWHM_anomalies = HWHM[data_anoms[0]]
+	peak_centre_anomalies = peak_centre[data_anoms[1]]
+	intensity_anomalies = intensity[data_anoms[2]]
+	
+
+
+	plt.plot(time_blocks,HWHM)
+	plt.xlabel('Number of time blocks')
+	plt.ylabel('HWHM')
+	plt.plot(data_anoms[0],HWHM_anomalies,'ro',markersize=10)
+	plt.show()
+
+	plt.plot(time_blocks, peak_centre)
+	plt.xlabel('Number of time blocks')
+	plt.ylabel('Peak Centre')
+	plt.plot(data_anoms[1],peak_centre_anomalies,'ro',markersize=10)
+	plt.show()
+
+
+	plt.plot(time_blocks, intensity)
+	plt.xlabel('Number of time blocks')
+	plt.ylabel('Peak Centre')
+	plt.plot(data_anoms[2],intensity_anomalies,'ro',markersize=10)
+	plt.show()
+
+
+	'''data_lowpass = np.column_stack((Filters.movingaverage(data[:,0],50), Filters.movingaverage(data[:,1],50), Filters.movingaverage(data[:,2],50)))
 
 	anomaly_indices = grubbs(data_lowpass)
 
@@ -137,4 +174,6 @@ if __name__ == '__main__':
 
 	plt.xlabel('Time/s')
 	plt.ylabel('Amplitude')
-	plt.show()
+	plt.show()'''
+
+
