@@ -40,12 +40,14 @@ def grubbs(timeseries):
 	mean = np.mean(timeseries, axis=0)
 	z_score = np.abs(timeseries - mean) / stdDev #normalised residuals
 	len_series = timeseries.shape[0]
-	threshold = scipy.stats.t.isf(0.05 / (2 * len_series), len_series - 2) 
+	threshold = scipy.stats.t.isf(0.05 / (2 * len_series), len_series - 2)
 	#upper critical values of the t distribution with N - 2 degrees of freedo and a significance level of alpha/2N
 	threshold_squared = threshold ** 2
+	if timeseries.shape[0] == 0:
+		return np.array([np.array([]) for column in timeseries.T])
 	grubbs_score = ((len_series - 1) / np.sqrt(len_series)) * np.sqrt(threshold_squared / (len_series - 2 + threshold_squared))
 	#if any data point deviates from the mean by more than the Grubbs score, then it is classed as an outlier. 
-
+	grubbs_score = 0
 	#anomalies = np.where(z_score[:,0] > grubbs_score)[0]
 	anomalies = np.array([np.where(column > grubbs_score)[0] for column in z_score.T])
 
@@ -112,24 +114,26 @@ def dev_of_Lor(HWHM, peak_centre, intensity):
 
 if __name__ == '__main__':
 
-    data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1]
-    fs = 3000
+	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
+	fs = 3000
 
+	data_lowpass = np.column_stack((Filters.movingaverage(data[:,0],50), Filters.movingaverage(data[:,1],50), Filters.movingaverage(data[:,2],50)))
 
-    data_lowpass = Filters.movingaverage(data,50)
-    
-    anomaly_indices = grubbs(data_lowpass)
-    print anomaly_indices
+	anomaly_indices = grubbs(data_lowpass)
 
-    times = Audio_waveform.waveform(data_lowpass,fs)[0]
+	times = Audio_waveform.waveform(data_lowpass,fs)[0]
 
-    anom_amplitudes = data_lowpass[anomaly_indices]
-    anom_times = times[anomaly_indices]
+	if anomaly_indices != []:
+		anom_amplitudes = [data_lowpass[:,i][anomaly_indices[:,i]] for i in range(len(data_lowpass.T))]
+		anom_times = [times[anomaly_indices[:,i]] for i in range(len(data_lowpass.T))]
+	else:
+		anom_amplitudes = np.array([])
+		anom_times = np.array([])
+		
+	plt.plot(times,data)
+	plt.plot(times,data_lowpass)
+	plt.plot(anom_times,anom_amplitudes,'ro',markersize = 10)
 
-    plt.plot(times,data)
-    plt.plot(times,data_lowpass)
-    plt.plot(anom_times,anom_amplitudes,'ro',markersize = 10)
-
-    plt.xlabel('Time/s')
-    plt.ylabel('Amplitude')
-    plt.show()
+	plt.xlabel('Time/s')
+	plt.ylabel('Amplitude')
+	plt.show()

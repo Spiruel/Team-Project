@@ -54,6 +54,7 @@ class DataCaptThread(threading.Thread):
 			except KeyboardInterrupt:
 				sys.exit()
 		else:
+			time_start = time.time()
 			full_data = np.loadtxt(self.filename, delimiter=',', comments='#') #simulates the measurement of data from a csv defined here
 			total_size = len(full_data)
 			try:
@@ -68,6 +69,7 @@ class DataCaptThread(threading.Thread):
 					self.d3 = np.concatenate((self.d3, self.data[:,2]))
 					
 					if i+self.block_size > total_size:
+						print 'Time taken:', time.time()-time_start, 's. Time actual:', str(len(full_data[:,0])/self.SAMPLE_RATE), 's.'
 						self.stop()
 
 			except KeyboardInterrupt:
@@ -142,9 +144,9 @@ class Analysis():
 			med_abs_dev_mask = algorithms.median_absolute_deviation(self.data.data) #self.data.data is the captured data in last duration
 			grubbs_mask = algorithms.grubbs(self.data.data)
 			five_sig_mask = algorithms.five_sigma(self.data.data)
-			dev_mov_av_mask = algorithms.stddev_from_moving_average(self.data.data)			
+			dev_mov_av_mask = algorithms.stddev_from_moving_average(self.data.d1[-self.data.block_size:])			
 			
-			anom_tests = [med_abs_dev_mask, grubbs_mask, five_sig_mask, dev_mov_av_mask]
+			anom_tests = [med_abs_dev_mask, five_sig_mask, grubbs_mask] #dev_mov_av_mask
 
 			anom_ys = np.array([np.zeros(self.data.block_size), np.zeros(self.data.block_size), np.zeros(self.data.block_size)])
 			
@@ -154,7 +156,10 @@ class Analysis():
 			
 			for channel in range(3):
 				for test in anom_tests:
-					anom_occurrences = np.bincount(test[channel])
+					if len(test) == 0:
+						anom_occurrences = np.array([0])
+					else:
+						anom_occurrences = np.bincount(test[channel])
 					if len(anom_occurrences) < self.data.block_size:
 						anom_occurrences = np.append(anom_occurrences, np.zeros(self.data.block_size - len(anom_occurrences)))
 					anom_ys[channel] = np.add(anom_ys[channel], anom_occurrences)	
