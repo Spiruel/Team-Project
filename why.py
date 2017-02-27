@@ -14,7 +14,7 @@ of the Lorentzian given a data set
 def lorentz_params(data):
     amplitude = data[:,0]
     
-    sample_rate = 1500.0
+    sample_rate = 3000.0
     n = len(amplitude)
     k = np.arange(n)
     T = n / sample_rate
@@ -37,7 +37,7 @@ Function to return a set of parameters used throughout the rest of the code
 def params(data):
     amplitude = data[:,0]
     
-    sample_rate = 1500.0
+    sample_rate = 3000.0
     n = len(amplitude)
     k = np.arange(n)
     T = n / sample_rate
