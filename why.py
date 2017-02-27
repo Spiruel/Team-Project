@@ -20,7 +20,7 @@ def lorentz_params(data):
     T = n / sample_rate
     frequency = k / T
     frequency = frequency[range(n/2)]
-    lowcut = 100
+    lowcut = 50
     Y = fourier_transform(amplitude, sample_rate, lowcut)
     Y_av = Filters.movingaverage(Y, 15)    
     p = [10, peak_finder(frequency, Y_av, sample_rate)[0], peak_finder(frequency, Y_av, sample_rate)[1]] #hwhm, peak centre, intensity    

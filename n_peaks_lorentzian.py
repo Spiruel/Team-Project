@@ -14,13 +14,13 @@ of the Lorentzian given a data set
 def lorentz_params(data):
     amplitude = data[:,0]
     
-    sample_rate = 1500.0
+    sample_rate = 3000.0
     n = len(amplitude)
     k = np.arange(n)
     T = n / sample_rate
     frequency = k / T
     frequency = frequency[range(n/2)]
-    lowcut = 100
+    lowcut = 50
     Y = fourier_transform(amplitude, sample_rate, lowcut)
     Y_av = Filters.movingaverage(Y, 15)    
     p = [10, peak_finder(frequency, Y_av, sample_rate)[0], peak_finder(frequency, Y_av, sample_rate)[1]] #hwhm, peak centre, intensity    
@@ -37,7 +37,7 @@ Function to return a set of parameters used throughout the rest of the code
 def params(data):
     amplitude = data[:,0]
     
-    sample_rate = 1500.0
+    sample_rate = 3000.0
     n = len(amplitude)
     k = np.arange(n)
     T = n / sample_rate
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 #    hwhm, peak_cen, peak_inten = lorentz_params(data)
 #    xs = np.linspace(0,700,100)
 #    plt.plot(xs, lorentzian(xs, (hwhm, peak_cen, peak_inten)))
-	plt.plot(params(data)[0], fourier_transform(data[:,0], 1500, 100), label = 'Raw data')
+	plt.plot(params(data)[0], fourier_transform(data[:,0], 3000, 100), label = 'Raw data')
 	plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
 	plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0], params(data)[1])[0], 'r-', lw=2, label = 'Optimized fit')
 	plt.xlabel(r'$\omega$ $(cm^{-1})$', fontsize = 18)    
