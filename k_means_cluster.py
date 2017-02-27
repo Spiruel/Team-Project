@@ -106,7 +106,10 @@ if __name__ == '__main__':
 
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 	normal_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][0:8000], window_size=20)
-	other_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
+	normal_data_av = np.mean(np.abs(normal_data))
+	other_data = Filters.movingaverage(np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
+	other_data_av = np.mean(np.abs(other_data))
+	other_data = other_data*(normal_data_av/other_data_av)
 	################ other_data may need to be normalised to be the same average amplitude as normal_data ##################
 	################ THIS IS VERY IMPORTANT!!!! ####################
 
