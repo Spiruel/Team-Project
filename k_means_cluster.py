@@ -157,6 +157,8 @@ if __name__ == '__main__':
 	plt.plot(reconstruction[0:n_plot_samples], label="Reconstructed")
 	plt.plot(error[0:n_plot_samples], label="Reconstruction Error")
 	plt.legend()
+	plt.xlabel('Sample number')
+	plt.ylabel('Amplitude / V')
 	plt.show()
 
 

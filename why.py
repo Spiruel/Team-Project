@@ -124,7 +124,7 @@ if __name__ == '__main__':
 #    hwhm, peak_cen, peak_inten = lorentz_params(data)
 #    xs = np.linspace(0,700,100)
 #    plt.plot(xs, lorentzian(xs, (hwhm, peak_cen, peak_inten)))
-	plt.plot(params(data)[0], fourier_transform(data[:,0], 1500, 100), label = 'Raw data')
+	plt.plot(params(data)[0], fourier_transform(data[:,0], 3000, 100), label = 'Raw data')
 	plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
 	plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0], params(data)[1])[0], 'r-', lw=2, label = 'Optimized fit')
 	plt.xlabel(r'$\omega$ $(cm^{-1})$', fontsize = 18)    
