@@ -68,7 +68,6 @@ if __name__ == '__main__':
 	
 	average = rolling_average(data,50)
 
-	print average
 	
 	plt.plot(times,data)
 	plt.plot(times,average)
