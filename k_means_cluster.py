@@ -69,11 +69,43 @@ def fit_centroids(data):
 	centroids = cluster_centroids(windowed_segments)
 	return centroids
 
+def synthetic(training_data, segment_length):
+	fitting_segments = sliding_chunker(training_data, segment_length=segment_len, slide_length=slide_len)
+	windowed_segments = windowed_segments_fn(fitting_segments, segment_length=segment_len)
 
-def reconstruction_fn(fitting_data, current_data, segment_length):
-	'''fitting_data is the normal data taken from a healthy motor, in order to create your synthetic set of shapes described by the centroids.
+	centroids = cluster_centroids(windowed_segments)
+
+	return centroids
+
+def fitting(fitting_data, centroids, segment_length):
+
+	reconstruction = np.zeros(len(fitting_data))
+	new_slide_len = int(segment_length/2)
+
+	test_segments = sliding_chunker(fitting_data, segment_length, slide_length=new_slide_len)
+
+	window = np.sin(np.linspace(0, np.pi, segment_len))**2
+
+	for segment_n, segment in enumerate(test_segments):
+		# don't modify the data in segments
+		segment = np.copy(segment)
+		segment *= window
+		nearest_centroid_idx = clusterer.predict(segment)[0]
+		
+		nearest_centroid = np.copy(centroids[nearest_centroid_idx])
+
+		# overlay our reconstructed segments with an overlap of half a segment
+		pos = segment_n * new_slide_len
+		reconstruction[pos:pos+segment_len] += nearest_centroid
+		#you add the begining of one centroid to the middle of the previous one. This is fine as the bigining of the new centroid
+		#is zero and the previous centroid is maximum. Then as the previous centroid reduces in amplitude, the new one increases. ''' 
+	return reconstruction
+
+
+def reconstruction_fn(training_data, current_data, segment_length):
+	'''training_data is the normal data taken from a healthy motor, in order to create your synthetic set of shapes described by the centroids.
 	Current_data is then the data that you are trying to fit the synthetic reconstructed data to'''
-	fitting_segments = sliding_chunker(fitting_data, segment_length=segment_len, slide_length=slide_len)
+	fitting_segments = sliding_chunker(training_data, segment_length=segment_len, slide_length=slide_len)
 	windowed_segments = windowed_segments_fn(fitting_segments, segment_length=segment_len)
 
 	centroids = cluster_centroids(windowed_segments)
@@ -84,8 +116,6 @@ def reconstruction_fn(fitting_data, current_data, segment_length):
 
 	test_segments = sliding_chunker(current_data, segment_length=segment_len,slide_length=new_slide_len) 
 	window = np.sin(np.linspace(0, np.pi, segment_len))**2
-
-	centroids = clusterer.cluster_centers_ #take this outside for loop
 
 	for segment_n, segment in enumerate(test_segments):
 		# don't modify the data in segments
@@ -113,40 +143,27 @@ if __name__ == '__main__':
 	################ other_data may need to be normalised to be the same average amplitude as normal_data ##################
 	################ THIS IS VERY IMPORTANT!!!! ####################
 
+	segment_len = 12
+	centroids = synthetic(normal_data, segment_len)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	[line] = plt.plot([0],[0])
+	plt.ion()
+	dat = np.array([])
+	for pos in range(0, len(other_data), 500):
+		reconstruction = fitting(other_data[pos:pos+500], centroids, segment_len)
+		dat = np.append(dat, reconstruction)
+		line.set_xdata(range(len(dat)))
+		line.set_ydata(reconstruction)
+		plt.pause(1)
+		print reconstruction
 
 
-	'''segments = sliding_chunker(normal_data, segment_length=segment_len, slide_length=slide_len)
-	windowed_segments = windowed_segments_fn(segments, segment_length=segment_len)
+	#reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
-	cluster_centroids = cluster_centroids(windowed_segments)
-
-
-
-	reconstruction = np.zeros(len(normal_data))
-	new_slide_len = int(segment_len/2)
-
-	test_segments = sliding_chunker(normal_data, segment_length=segment_len,slide_length=new_slide_len) 
-	window = np.sin(np.linspace(0, np.pi, segment_len))**2
-
-	centroids = clusterer.cluster_centers_ #take this outside for loop
-
-	for segment_n, segment in enumerate(test_segments):
-		# don't modify the data in segments
-		segment = np.copy(segment)
-		segment *= window
-		nearest_centroid_idx = clusterer.predict(segment)[0]
-		
-		nearest_centroid = np.copy(centroids[nearest_centroid_idx])
-
-		# overlay our reconstructed segments with an overlap of half a segment
-		pos = segment_n * new_slide_len
-		reconstruction[pos:pos+segment_len] += nearest_centroid
-		#you add the begining of one centroid to the middle of the previous one. This is fine as the bigining of the new centroid
-		#is zero and the previous centroid is maximum. Then as the previous centroid reduces in amplitude, the new one increases. '''
-
-	reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
-
-	n_plot_samples = 3000
+	'''n_plot_samples = 3000
 
 	error = reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples]
 	error_98th_percentile = np.percentile(error, 98)
@@ -159,7 +176,7 @@ if __name__ == '__main__':
 	plt.legend()
 	plt.xlabel('Sample number')
 	plt.ylabel('Amplitude / V')
-	plt.show()
+	plt.show()'''
 
 
 	##### Looking at a single segment and the quality of fit
