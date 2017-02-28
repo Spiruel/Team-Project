@@ -1,3 +1,4 @@
+from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
@@ -7,20 +8,35 @@ import Filters
 import operator
 from scipy.signal import butter, lfilter
 import Find_peaks
+import peakutils
 
+
+def conv_to_freq(data, indices):
+	'''
+	Takes in data set and indices of peaks and converts the indices to frequency
+	'''
+	sample_rate = 3000
+	n=len(data)
+	k = np.arange(n)
+	T = n / sample_rate
+	frequency = k / T
+	print frequency
+	frequencies = frequency[indices]
+
+	return frequencies
 '''
 Function to return the half-width half-maximum, peak centre and peak intensity
 of the Lorentzian given a data set
 '''
 def lorentz_params(data):
-	amplitude = data[:,0] #Need to change this so that it works for each column of data, not just the first
+	amplitude = data #[:,0] #Need to change this so that it works for each column of data, not just the first
 	
 	sample_rate = 3000.0
 	n = len(amplitude)
 	k = np.arange(n)
 	T = n / sample_rate
 	frequency = k / T
-	frequency = frequency[range(n/2)]
+	frequency = frequency[range(np.int(n/2))]
 	lowcut = 10
 	Y = fourier_transform(amplitude, sample_rate, lowcut)
 	Y_av = Filters.movingaverage(Y, 15)    
@@ -36,14 +52,14 @@ def lorentz_params(data):
 Function to return a set of parameters used throughout the rest of the code
 ''' 
 def params(data):
-	amplitude = data[:,0]
+	amplitude = data#[:,0]
 	
 	sample_rate = 3000.0
 	n = len(amplitude)
 	k = np.arange(n)
 	T = n / sample_rate
 	frequency = k / T
-	frequency = frequency[range(n/2)]
+	frequency = frequency[range(np.int(n/2))]
 	lowcut = 100
 	Y = fourier_transform(amplitude, sample_rate, lowcut)
 	Y_av = Filters.movingaverage(Y, 10) 
@@ -70,7 +86,7 @@ Fourier space
 def fourier_transform(amplitude, sample_rate, lowcut):
 	dat = butter_highpass_filter(amplitude, lowcut, sample_rate)
 	Y = fft(dat) / len(amplitude)
-	Y = abs(Y[range(len(amplitude)/2)])
+	Y = abs(Y[range(np.int(len(amplitude)/2))])
 	return Y
 
 '''
@@ -120,15 +136,24 @@ def optimization(frequency, p, Y_av, sample_rate):
 	return fit
 	 
 if __name__ == '__main__':
-	data = np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')
-	print lorentz_params(data)
-	print Find_peaks.find_peaks(data[:,0])
+	data = np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0]
+	frequencies, sample_rate, amplitudes = params(data)
+	print len(amplitudes)
+	print len(frequencies)
+	#print lorentz_params(data)
+	peak_indices = peakutils.indexes(amplitudes, thres=0.4, min_dist=len(data)/50)
+	peak_freqs =  conv_to_freq(data, peak_indices)
+	print peak_freqs
+
+	peak_amplitudes = amplitudes[peak_indices]
+
 	#    hwhm, peak_cen, peak_inten = lorentz_params(data)
 	#    xs = np.linspace(0,700,100)
 	#    plt.plot(xs, lorentzian(xs, (hwhm, peak_cen, peak_inten)))
-	plt.plot(params(data)[0], fourier_transform(data[:,0], 3000, 100), label = 'Raw data')
-	plt.plot(params(data)[0], params(data)[2], label = 'Smoothed data')
+	plt.plot(params(data)[0], fourier_transform(data, 3000, 100), label = 'Raw data')
+	plt.plot(params(data)[0], amplitudes, label = 'Smoothed data')
 	plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0], params(data)[1])[0], 'r-', lw=2, label = 'Optimized fit')
+	plt.plot(peak_freqs, peak_amplitudes, 'ro', markersize=10, label = 'Peaks')
 	plt.xlabel(r'$\omega$ / $Hz$', fontsize = 18)    
 	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
 	plt.legend()
