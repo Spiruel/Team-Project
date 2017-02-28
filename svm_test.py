@@ -6,24 +6,12 @@ from sklearn import svm
 data = np.loadtxt(r'C:/Users/alexa/Dropbox/TracerCo project team folder/12V motor/reference12V.csv',delimiter=',')
 data_anom = np.loadtxt(r'C:/Users/alexa/Dropbox/TracerCo project team folder/12V motor/specific_anomaly_test1.csv',delimiter=',', usecols=range(3))
 
-'''
+X, Y = data[:,0][:100], data[:,1][:100]
+X_anom, Y_anom = data_anom[:,0][:20], data_anom[:,1][:20]
+X_train = np.r_[X + 0.015, X - 0.015]
+X_test = np.r_[X_anom + 0.015, X_anom - 0.015]
+
 xx, yy = np.meshgrid(np.linspace(-5, 5, 500), np.linspace(-5, 5, 500))
-# Generate train data
-X = 0.3 * np.random.randn(100, 2)
-X_train = np.r_[X + 2, X - 2]
-# Generate some regular novel observations
-X = 0.3 * np.random.randn(20, 2)
-X_test = np.r_[X + 2, X - 2]
-# Generate some abnormal novel observations
-X_outliers = np.random.uniform(low=-4, high=4, size=(20, 2))
-'''
-
-X_train, Y_train = data[:,0][0:70000], data[:,1][0:70000]
-X_test, Y_test = data_anom[:,0][0:70000], data_anom[:,1][0:70000]
-
-xx, yy = np.meshgrid(np.linspace(-5, 5, len(X_train)), np.linspace(-5, 5, len(X_train)))
-
-		
 
 # fit the model
 clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
