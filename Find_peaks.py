@@ -26,15 +26,15 @@ def find_peak_old(freq_amps, fs=3000):
 	
 	return (peak_freqs, peak_amps)	
 	
-def find_peaks(data,fs=3000):
+def find_peaks(data, thres, fs=3000):
 	fourier = Fourier.fourier(data,fs)
 	
 	freqs = fourier[0]
 	freq_amps = fourier[1]
-	freq_amps_db = 20*np.log10(freq_amps)
+	#freq_amps_db = 20*np.log10(freq_amps)
 	
-	indexes = peakutils.indexes(freq_amps_db, thres=30, min_dist=30)
-
+	indexes = peakutils.indexes(freq_amps, thres=thres, min_dist=50)
+	return indexes
 	
 	
 if __name__ == '__main__':
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
 	data = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,1]#[:5000]
 	
-	fs = 1500
+	fs = 3000
 	
 	import Filters
 	
@@ -67,9 +67,8 @@ if __name__ == '__main__':
 	plt.plot(peak_freqs,peak_amps, 'ro', markersize = 10)
 	plt.show()'''
 	
-	indexes = peakutils.indexes(freq_amps_db, thres=0.8, min_dist=10)
+	indexes = peakutils.indexes(freq_amps, thres=0.8, min_dist=10)
 
-	indexes = peakutils.indexes(freq_amps_db, thres=.8, min_dist=10)
 	
 	print indexes
 	peak_freqs = freqs[indexes] 
