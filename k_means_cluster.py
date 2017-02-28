@@ -137,7 +137,7 @@ if __name__ == '__main__':
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 	normal_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][0:8000], window_size=20)
 	normal_data_av = np.mean(np.abs(normal_data))
-	other_data = Filters.movingaverage(np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
+	other_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
 	other_data_av = np.mean(np.abs(other_data))
 	other_data = other_data*(normal_data_av/other_data_av)
 	################ other_data may need to be normalised to be the same average amplitude as normal_data ##################
@@ -149,17 +149,25 @@ if __name__ == '__main__':
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	[line] = plt.plot([0],[0])
+	[line] = plt.plot([0],[0], label='error')
 	plt.ion()
 	dat = np.array([])
-	for pos in range(0, len(other_data), 500):
-		reconstruction = fitting(other_data[pos:pos+500], centroids, segment_len)
+	ax.set_ylim([-0.002,0.002])
+	ax.set_xlim([0,len(other_data)])
+	
+	block = 500
+	for pos in range(0, len(other_data), block):
+		reconstruction = fitting(other_data[pos:pos+block], centroids, segment_len)
 		dat = np.append(dat, reconstruction)
 		line.set_xdata(range(len(dat)))
-		line.set_ydata(reconstruction)
-		plt.pause(1)
-		print reconstruction
-
+		line.set_ydata(dat)
+		plt.pause(.05)
+	
+	plt.ioff()
+	
+	plt.plot(range(len(other_data)), other_data, label='orig data')
+	plt.legend(frameon=False)
+	plt.show()
 
 	#reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
