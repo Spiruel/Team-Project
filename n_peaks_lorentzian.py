@@ -47,6 +47,13 @@ def find_peaks(data):
 def gaussian(x, amp, cen, wid):
     "1-d gaussian: gaussian(x, amp, cen, wid)"
     return (amp/(np.sqrt(2*np.pi)*wid)) * np.exp(-(x-cen)**2 /(2*wid**2))
+    #another equation for it could be (amp) * np.exp(-(x-cen)**2 /(2*wid**2)) but the current one we are using makes the total area 
+    #under the graph equal to amp, which is what we want. We want to monitor the change in the total amplitude of the peak, summed 
+    #over all frequencies.
+
+def lorentzian(x, amp, cen, wid):
+	"1-d lorentzian: lorentzian(x, amp, cen, wid)"
+	return amp/np.pi * wid/((x-cen)**2 + wid**2)
 
 def line(x, slope, intercept):
     "line"
@@ -94,13 +101,6 @@ def fourier_transform(amplitude, sample_rate, lowcut):
 	Y = fft(dat) / len(amplitude)
 	Y = abs(Y[range(np.int(len(amplitude)/2))])
 	return Y
-
-'''
-Function returns the Lorentzian fit on the parameters supplied
-'''
-def lorentzian(frequencies, amplitude, centre, sigma):
-	lorentzian = amplitude/np.pi * sigma/((frequencies-centre)**2 + simga**2)
-	return lorentzian
 	
 '''
 Function used to optimise the Lorentzian parameters
@@ -141,9 +141,9 @@ def fit_peaks(data):
 	peak_freq = peak_freqs[0]
 	peak_amp = peak_amplitudes[0]
 
-	min_freq, max_freq = peak_freq-60, peak_freq+60
+	min_freq, max_freq = peak_freq-90, peak_freq+90
 
-	mod = Model(gaussian) + Model(line)
+	mod = Model(lorentzian) + Model(line)
 	pars  = mod.make_params( amp=peak_amp, cen=peak_freq, wid=5, slope=0, intercept=0)
 
 	amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -151,14 +151,14 @@ def fit_peaks(data):
 
 	out = mod.fit(amp_range, pars, x=freq_range)
 
-	amplitude = out.params['amp'].value
-	#amplitude_err = out.params['amp'].error?
-	centre = out.params['cen'].value
-	sigma = out.params['wid'].value
-	slope = out.params['slope'].value
-	c = out.params['intercept'].value
+	amplitude, amplitude_err = out.params['amp'].value, out.params['amp'].stderr
+	centre, centre_err = out.params['cen'].value, out.params['cen'].stderr
+	sigma, sigma_err = out.params['wid'].value, out.params['wid'].stderr
+	slope, slope_err = out.params['slope'].value, out.params['slope'].stderr
+	c, c_err = out.params['intercept'].value, out.params['intercept'].stderr
 
 	all_parameters = np.array([amplitude,centre,sigma,slope,c])
+	all_parameters_err = np.array([amplitude_err, centre_err, sigma_err, slope_err, c_err])
 
 	if len(peak_indices)>1:
 
@@ -167,7 +167,7 @@ def fit_peaks(data):
 			peak_freq = peak_freqs[i+1]
 			peak_amp = peak_amplitudes[i+1]
 
-			min_freq, max_freq = peak_freq-60, peak_freq+60
+			min_freq, max_freq = peak_freq-90, peak_freq+90
 
 			mod = Model(gaussian) + Model(line)
 			pars  = mod.make_params( amp=peak_amp, cen=peak_freq, wid=5, slope=0, intercept=0)
@@ -177,57 +177,28 @@ def fit_peaks(data):
 
 			out = mod.fit(amp_range, pars, x=freq_range)
 
-			amplitude = out.params['amp'].value
-			#amplitude_err = out.params['amp'].error?
-			centre = out.params['cen'].value
-			sigma = out.params['wid'].value
-			slope = out.params['slope'].value
-			c = out.params['intercept'].value
+			amplitude, amplitude_err = out.params['amp'].value, out.params['amp'].stderr
+			centre, centre_err = out.params['cen'].value, out.params['cen'].stderr
+			sigma, sigma_err = out.params['wid'].value, out.params['wid'].stderr
+			slope, slope_err = out.params['slope'].value, out.params['slope'].stderr
+			c, c_err = out.params['intercept'].value, out.params['intercept'].stderr
 
 			parameters = np.array([amplitude,centre,sigma,slope,c])
 			all_parameters = np.vstack((all_parameters,parameters))
 
-	return all_parameters
+			parameters_err = np.array([amplitude_err, centre_err, sigma_err, slope_err, c_err])
+			all_parameters_err = np.vstack((all_parameters_err,parameters_err))
+
+
+	return (all_parameters, all_parameters_err)
 
 if __name__ == '__main__':
-	data = np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][0:5000]
+	data = np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][5000:10000]
 	frequencies, sample_rate, amplitudes = params(data)
 	
 	peak_indices, peak_freqs, peak_amplitudes = find_peaks(data)
 	print peak_freqs
 	
-	'''peak_freq1 = peak_freqs[0]
-	peak_amp1 = peak_amplitudes[0]
-
-	peak_index1 = conv_to_samples(data,peak_freqs[0])
-
-
-	#####finding constant offset
-
-	mod = Model(gaussian) + Model(line)
-	pars  = mod.make_params( amp=peak_amp1, cen=peak_freq1, wid=20, slope=0, intercept=0)
-
-	out = mod.fit(amplitudes[conv_to_samples(data,peak_freq1-50):conv_to_samples(data,peak_freq1+50)], pars, x=frequencies[conv_to_samples(data,peak_freq1-50):conv_to_samples(data,peak_freq1+50)])
-
-
-	amplitude = out.params['amp'].value
-	centre = out.params['cen'].value
-	sigma = out.params['wid'].value
-	slope = out.params['slope'].value
-	c = out.params['intercept'].value
-
-	print out.fit_report(min_correl=0.25)
-
-	print (amplitude, centre, sigma, slope, c)
-
-	fit = gaussian(frequencies,amplitude,centre,sigma) + line(frequencies, slope, c)'''
-
-	#    hwhm, peak_cen, peak_inten = lorentz_params(data)
-	#    xs = np.linspace(0,700,100)
-	#    plt.plot(xs, lorentzian(xs, (hwhm, peak_cen, peak_inten)))
-
-	print fit_peaks(data), '########'
-
 
 	plt.plot(params(data)[0], fourier_transform(data, 3000, 100), label = 'Raw data')
 	plt.plot(params(data)[0], amplitudes, label = 'Smoothed data')
@@ -235,16 +206,32 @@ if __name__ == '__main__':
 	plt.plot(peak_freqs, peak_amplitudes, 'ro', markersize=10, label = 'Peaks')
 
 
-	if len(peak_indices)==0:
-		(amplitude,centre,sigma,slope,c) = fit_peaks(data) #NEED TO FIX THIS TO WORK WITH JUST ONE PEAK!!!!!
-		fit = gaussian(frequencies,amplitude,centre,sigma) + line(frequencies, slope, c)
-		plt.plot(frequencies, fit, label='Gaussian'+str(i+1), color='black')
+	fitting = True
+	if fitting and len(peak_indices) > 0:
 
-	else:
-		for i in range(len(peak_indices)):
-			(amplitude,centre,sigma,slope,c) = fit_peaks(data)[i,:] #NEED TO FIX THIS TO WORK WITH JUST ONE PEAK!!!!!
-			fit = gaussian(frequencies,amplitude,centre,sigma) + line(frequencies, slope, c)
-			plt.plot(frequencies, fit, label='Gaussian'+str(i+1), color='black')
+		print 'Number of peaks = ', len(peak_indices)
+
+		print 'Output of fit_peaks:', fit_peaks(data), '########'
+
+		if len(peak_indices)==1:
+			output = fit_peaks(data)
+			(amplitude,centre,sigma,slope,c) = output[0]
+			(amplitude_err, centre_err, sigma_err, slope_err, c_err) = output[1]
+			peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
+			fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, slope, c)
+			plt.plot(peak_plotting_freqs, fit, label='Gaussian', color='black')
+
+		else:
+			for i in range(len(peak_indices)):
+				output = fit_peaks(data)
+				(amplitude,centre,sigma,slope,c) = output[0][i,:] 
+				(amplitude_err, centre_err, sigma_err, slope_err, c_err) = output[1][i,:] 
+				percent_err = 100 * output[1][i,:]/output[0][i,:]
+				print 'percentage errors = ', percent_err
+				#amplitude = amplitude*np.sqrt(2*np.pi)*sigma
+				peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
+				fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, slope, c)
+				plt.plot(peak_plotting_freqs, fit, label='Gaussian'+str(i+1), color='black')
 	plt.xlabel(r'$\omega$ / $Hz$', fontsize = 18)    
 	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
 	plt.legend()
