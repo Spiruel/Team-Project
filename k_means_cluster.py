@@ -137,7 +137,7 @@ if __name__ == '__main__':
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 	normal_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][0:8000], window_size=20)
 	normal_data_av = np.mean(np.abs(normal_data))
-	other_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
+	other_data = Filters.movingaverage(np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
 	other_data_av = np.mean(np.abs(other_data))
 	other_data = other_data*(normal_data_av/other_data_av)
 	################ other_data may need to be normalised to be the same average amplitude as normal_data ##################
@@ -146,45 +146,55 @@ if __name__ == '__main__':
 	segment_len = 12
 	centroids = synthetic(normal_data, segment_len)
 
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
+	# fig = plt.figure()
+	# ax = fig.add_subplot(111)
 
-	[line] = plt.plot([0],[0], label='error')
-	plt.ion()
-	dat = np.array([])
-	ax.set_ylim([-0.002,0.002])
-	ax.set_xlim([0,len(other_data)])
+	# [line] = plt.plot([0],[0], label='error')
+	# plt.ion()
+	# dat = np.array([])
+	# ax.set_ylim([-0.002,0.002])
+	# ax.set_xlim([0,len(other_data)])
 	
-	block = 500
-	for pos in range(0, len(other_data), block):
-		reconstruction = fitting(other_data[pos:pos+block], centroids, segment_len)
-		dat = np.append(dat, reconstruction)
-		line.set_xdata(range(len(dat)))
-		line.set_ydata(dat)
-		plt.pause(.05)
+	# block = 500
+	# for pos in range(0, len(other_data), block):
+		# reconstruction = fitting(other_data[pos:pos+block], centroids, segment_len)
+		# dat = np.append(dat, reconstruction)
+		# line.set_xdata(range(len(dat)))
+		# line.set_ydata(dat)
+		# plt.pause(.05)
 	
-	plt.ioff()
+	# plt.ioff()
 	
-	plt.plot(range(len(other_data)), other_data, label='orig data')
-	plt.legend(frameon=False)
-	plt.show()
+	# plt.plot(range(len(other_data)), other_data, label='orig data')
+	# plt.legend(frameon=False)
+	# plt.show()
 
-	#reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
+	reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
-	'''n_plot_samples = 3000
+	n_plot_samples = 3000
 
 	error = reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples]
 	error_98th_percentile = np.percentile(error, 98)
 	print("Maximum reconstruction error was %.5f" % error.max())
 	print("98th percentile of reconstruction error was %.5f" % error_98th_percentile)
 
-	plt.plot(other_data[0:n_plot_samples], label="Original")
-	plt.plot(reconstruction[0:n_plot_samples], label="Reconstructed")
-	plt.plot(error[0:n_plot_samples], label="Reconstruction Error")
-	plt.legend()
-	plt.xlabel('Sample number')
-	plt.ylabel('Amplitude / V')
-	plt.show()'''
+	plt.style.use('seaborn-white')
+	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True)
+	ax1.plot(other_data[0:n_plot_samples], 'b', lw=1, label="Original")
+	ax2.plot(reconstruction[0:n_plot_samples], 'orange', lw=1, label="Reconstructed")
+	ax3.plot(error[0:n_plot_samples], 'r', lw=1, label="Reconstruction Error")
+	# Fine-tune figure; make subplots close to each other and hide x ticks for
+	# all but bottom plot.
+	f.subplots_adjust(hspace=0)
+	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+
+	plt.ylim([-0.005-0.001,0.005+0.001])
+	for a in [ax1, ax2, ax3]:
+		a.legend(frameon=False, loc='lower right')
+	ax3.set_xlabel('Samples')
+	ax2.set_ylabel('Amplitude / V')
+	plt.savefig('figures/kmeans.png', bbox_inches='tight', transparent=True)
+	plt.show()
 
 
 	##### Looking at a single segment and the quality of fit
