@@ -36,7 +36,7 @@ def conv_to_samples(data, frequencies):
 
 def find_peaks(data):
 	frequencies, sample_rate, amplitudes = params(data)
-	peak_indices = peakutils.indexes(amplitudes, thres=0.4, min_dist=len(data)/20)
+	peak_indices = peakutils.indexes(amplitudes, thres=0.3, min_dist=len(data)/50)
 	peak_freqs =  conv_to_freq(data, peak_indices)
 
 	peak_amplitudes = amplitudes[peak_indices]
@@ -129,7 +129,7 @@ def optimization(frequency, p, Y_av, sample_rate):
 	pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
 	best_parameters = pbest[0]
 	p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency, sample_rate)[0])
-	fit = lorentzian(frequency, p_new)
+	fit = gaussian(frequency, p_new)
 	return fit
 
 def fit_peaks(data):
@@ -143,7 +143,7 @@ def fit_peaks(data):
 
 	min_freq, max_freq = peak_freq-90, peak_freq+90
 
-	mod = Model(lorentzian) + Model(line)
+	mod = Model(gaussian) + Model(line)
 	pars  = mod.make_params( amp=peak_amp, cen=peak_freq, wid=5, slope=0, intercept=0)
 
 	amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -169,7 +169,7 @@ def fit_peaks(data):
 
 			min_freq, max_freq = peak_freq-90, peak_freq+90
 
-			mod = Model(gaussian) + Model(line)
+			mod = Model(lorentzian) + Model(line)
 			pars  = mod.make_params( amp=peak_amp, cen=peak_freq, wid=5, slope=0, intercept=0)
 
 			amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -192,12 +192,21 @@ def fit_peaks(data):
 
 	return (all_parameters, all_parameters_err)
 
+def mult_channels(data):
+	chan1= data[:,0]
+	chan2 = data[:,1]
+	chan3 = data[:,2]
+
+	print chan1
+
 if __name__ == '__main__':
-	data = np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][5000:10000]
+	data = np.loadtxt('data/gears_removed_baseline.csv', delimiter=',', comments='#')[:,1]
 	frequencies, sample_rate, amplitudes = params(data)
 	
 	peak_indices, peak_freqs, peak_amplitudes = find_peaks(data)
 	print peak_freqs
+
+	mult_channels(data)
 	
 
 	plt.plot(params(data)[0], fourier_transform(data, 3000, 100), label = 'Raw data')
@@ -211,7 +220,7 @@ if __name__ == '__main__':
 
 		print 'Number of peaks = ', len(peak_indices)
 
-		print 'Output of fit_peaks:', fit_peaks(data), '########'
+		print 'fit_peaks parameters:', fit_peaks(data)[0], '########'
 
 		if len(peak_indices)==1:
 			output = fit_peaks(data)
@@ -232,7 +241,7 @@ if __name__ == '__main__':
 				peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
 				fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, slope, c)
 				plt.plot(peak_plotting_freqs, fit, label='Gaussian'+str(i+1), color='black')
-	plt.xlabel(r'$\omega$ / $Hz$', fontsize = 18)    
+	plt.xlabel(r'$f$ / $Hz$', fontsize = 18)    
 	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
 	plt.legend()
 plt.show()

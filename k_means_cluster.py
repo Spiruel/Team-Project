@@ -196,6 +196,10 @@ if __name__ == '__main__':
 	plt.savefig('figures/kmeans.png', bbox_inches='tight', transparent=True)
 	plt.show()
 
+	
+	distances = clusterer.inertia_
+	print distances
+
 
 	##### Looking at a single segment and the quality of fit
 	'''new_slide_len = int(segment_len/2)
