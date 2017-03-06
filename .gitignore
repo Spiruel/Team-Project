@@ -1,2 +1,4 @@
 *.pyc
 #ensures all pyc files do not get committed
+
+figures/
