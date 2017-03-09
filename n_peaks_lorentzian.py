@@ -36,7 +36,7 @@ def conv_to_samples(data, frequencies):
 
 def find_peaks(data):
 	frequencies, sample_rate, amplitudes = params(data)
-	peak_indices = peakutils.indexes(amplitudes, thres=0.3, min_dist=len(data)/50)
+	peak_indices = peakutils.indexes(amplitudes, thres=0.1, min_dist=len(data)/20)
 	peak_freqs =  conv_to_freq(data, peak_indices)
 
 	peak_amplitudes = amplitudes[peak_indices]
@@ -55,9 +55,9 @@ def lorentzian(x, amp, cen, wid):
 	"1-d lorentzian: lorentzian(x, amp, cen, wid)"
 	return amp/np.pi * wid/((x-cen)**2 + wid**2)
 
-def line(x, slope, intercept):
+def line(x, intercept):
     "line"
-    return slope * x + intercept
+    return intercept
 
 
 	
@@ -73,9 +73,9 @@ def params(data):
 	T = n / sample_rate
 	frequency = k / T
 	frequency = frequency[range(np.int(n/2))]
-	lowcut = 100
+	lowcut = 0
 	Y = fourier_transform(amplitude, sample_rate, lowcut)
-	Y_av = Filters.movingaverage(Y, 30) 
+	Y_av = Filters.movingaverage(Y, 10) 
 	return frequency, sample_rate, Y_av
 
 '''
@@ -97,9 +97,10 @@ Function to return the intensity of the wave at certain amplitudes in
 Fourier space
 '''
 def fourier_transform(amplitude, sample_rate, lowcut):
+	'''returns power spectral density of a time series data set'''
 	dat = butter_highpass_filter(amplitude, lowcut, sample_rate)
 	Y = fft(dat) / len(amplitude)
-	Y = abs(Y[range(np.int(len(amplitude)/2))])
+	Y = abs(Y[range(np.int(len(amplitude)/2))])**2 #making sure it is the power spectral density PSD.
 	return Y
 	
 '''
@@ -129,7 +130,7 @@ def optimization(frequency, p, Y_av, sample_rate):
 	pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
 	best_parameters = pbest[0]
 	p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency, sample_rate)[0])
-	fit = gaussian(frequency, p_new)
+	fit = lorentzian(frequency, p_new)
 	return fit
 
 def fit_peaks(data):
@@ -141,10 +142,10 @@ def fit_peaks(data):
 	peak_freq = peak_freqs[0]
 	peak_amp = peak_amplitudes[0]
 
-	min_freq, max_freq = peak_freq-90, peak_freq+90
+	min_freq, max_freq = peak_freq-30, peak_freq+30
 
-	mod = Model(gaussian) + Model(line)
-	pars  = mod.make_params( amp=peak_amp, cen=peak_freq, wid=5, slope=0, intercept=0)
+	mod = Model(lorentzian) + Model(line)
+	pars  = mod.make_params(amp=peak_amp, cen=peak_freq, wid=5, intercept=0)
 
 	amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
 	freq_range = frequencies[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -154,11 +155,11 @@ def fit_peaks(data):
 	amplitude, amplitude_err = out.params['amp'].value, out.params['amp'].stderr
 	centre, centre_err = out.params['cen'].value, out.params['cen'].stderr
 	sigma, sigma_err = out.params['wid'].value, out.params['wid'].stderr
-	slope, slope_err = out.params['slope'].value, out.params['slope'].stderr
+	#slope, slope_err = out.params['slope'].value, out.params['slope'].stderr
 	c, c_err = out.params['intercept'].value, out.params['intercept'].stderr
 
-	all_parameters = np.array([amplitude,centre,sigma,slope,c])
-	all_parameters_err = np.array([amplitude_err, centre_err, sigma_err, slope_err, c_err])
+	all_parameters = np.array([amplitude,centre,sigma,c])
+	all_parameters_err = np.array([amplitude_err, centre_err, sigma_err, c_err])
 
 	if len(peak_indices)>1:
 
@@ -167,10 +168,10 @@ def fit_peaks(data):
 			peak_freq = peak_freqs[i+1]
 			peak_amp = peak_amplitudes[i+1]
 
-			min_freq, max_freq = peak_freq-90, peak_freq+90
+			min_freq, max_freq = peak_freq-30, peak_freq+30
 
 			mod = Model(lorentzian) + Model(line)
-			pars  = mod.make_params( amp=peak_amp, cen=peak_freq, wid=5, slope=0, intercept=0)
+			pars  = mod.make_params(amp=peak_amp, cen=peak_freq, wid=5, intercept=0)
 
 			amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
 			freq_range = frequencies[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -180,13 +181,13 @@ def fit_peaks(data):
 			amplitude, amplitude_err = out.params['amp'].value, out.params['amp'].stderr
 			centre, centre_err = out.params['cen'].value, out.params['cen'].stderr
 			sigma, sigma_err = out.params['wid'].value, out.params['wid'].stderr
-			slope, slope_err = out.params['slope'].value, out.params['slope'].stderr
+			#slope, slope_err = out.params['slope'].value, out.params['slope'].stderr
 			c, c_err = out.params['intercept'].value, out.params['intercept'].stderr
 
-			parameters = np.array([amplitude,centre,sigma,slope,c])
+			parameters = np.array([amplitude,centre,sigma,c])
 			all_parameters = np.vstack((all_parameters,parameters))
 
-			parameters_err = np.array([amplitude_err, centre_err, sigma_err, slope_err, c_err])
+			parameters_err = np.array([amplitude_err, centre_err, sigma_err, c_err])
 			all_parameters_err = np.vstack((all_parameters_err,parameters_err))
 
 
@@ -197,21 +198,19 @@ def mult_channels(data):
 	chan2 = data[:,1]
 	chan3 = data[:,2]
 
-	print chan1
+	return np.array([chan1, chan2, chan3])
 
 if __name__ == '__main__':
-	data = np.loadtxt('data/gears_removed_baseline.csv', delimiter=',', comments='#')[:,1]
+	data = np.loadtxt('data/large_20V.csv', delimiter=',', comments='#')[:,1]
+
 	frequencies, sample_rate, amplitudes = params(data)
 	
 	peak_indices, peak_freqs, peak_amplitudes = find_peaks(data)
 	print peak_freqs
-
-	mult_channels(data)
 	
 
-	plt.plot(params(data)[0], fourier_transform(data, 3000, 100), label = 'Raw data')
+	#plt.plot(params(data)[0], fourier_transform(data, 3000, 10), label = 'Raw data')
 	plt.plot(params(data)[0], amplitudes, label = 'Smoothed data')
-	#plt.plot(params(data)[0], optimization(params(data)[0], lorentz_params(data), params(data)[2], params(data)[1]) + background_subtraction(params(data)[2], params(data)[0], params(data)[1])[0], 'r-', lw=2, label = 'Optimized fit')
 	plt.plot(peak_freqs, peak_amplitudes, 'ro', markersize=10, label = 'Peaks')
 
 
@@ -224,23 +223,24 @@ if __name__ == '__main__':
 
 		if len(peak_indices)==1:
 			output = fit_peaks(data)
-			(amplitude,centre,sigma,slope,c) = output[0]
-			(amplitude_err, centre_err, sigma_err, slope_err, c_err) = output[1]
+			(amplitude,centre,sigma,c) = output[0]
+			(amplitude_err, centre_err, sigma_err, c_err) = output[1]
 			peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
-			fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, slope, c)
-			plt.plot(peak_plotting_freqs, fit, label='Gaussian', color='black')
+			fit = lorentzian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, c)
+
+			plt.plot(peak_plotting_freqs, fit, label='Lorentzian', color='black')
 
 		else:
 			for i in range(len(peak_indices)):
 				output = fit_peaks(data)
-				(amplitude,centre,sigma,slope,c) = output[0][i,:] 
-				(amplitude_err, centre_err, sigma_err, slope_err, c_err) = output[1][i,:] 
+				(amplitude,centre,sigma,c) = output[0][i,:] 
+				(amplitude_err, centre_err, sigma_err, c_err) = output[1][i,:] 
 				percent_err = 100 * output[1][i,:]/output[0][i,:]
 				print 'percentage errors = ', percent_err
 				#amplitude = amplitude*np.sqrt(2*np.pi)*sigma
 				peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
-				fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, slope, c)
-				plt.plot(peak_plotting_freqs, fit, label='Gaussian'+str(i+1), color='black')
+				fit = lorentzian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, c)
+				plt.plot(peak_plotting_freqs, fit, label='Lorentzian'+str(i+1), color='black')
 	plt.xlabel(r'$f$ / $Hz$', fontsize = 18)    
 	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
 	plt.legend()
