@@ -61,7 +61,7 @@ if __name__ == '__main__':
 	cutoff = 50  # desired cutoff frequency of the filter, Hz
 
 	
-	data = np.loadtxt('data/gears_removed_baseline.csv', delimiter=',', comments='#')[:,0][0:1000]
+	data = np.loadtxt('data/rusty_12V.csv', delimiter=',', comments='#')[:,1][0:5000]
 	freqs_and_amps = Fourier.fourier(data, fs)
 	freqs = freqs_and_amps[0]
 	amplitudes = freqs_and_amps[1]
@@ -116,6 +116,6 @@ if __name__ == '__main__':
 
 
 	plt.style.use('seaborn-white')
-	plt.savefig('figures/moving_average.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/moving_average.png', dpi=300, transparent=True, bbox_inches='tight')
+	#plt.savefig('figures/moving_average.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	#plt.savefig('figures/moving_average.png', dpi=300, transparent=True, bbox_inches='tight')
 	plt.show()
