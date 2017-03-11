@@ -123,7 +123,7 @@ def dev_of_Lor(HWHM, peak_centre, intensity):
 if __name__ == '__main__':
 
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
-	data = np.loadtxt('data/rusty_12V.csv', delimiter=',', comments=['#'],skiprows=1)[:,0]
+	data = np.loadtxt('data/large_4V-9A_water.csv', delimiter=',', comments='#',skiprows=1)[:,2][0:50000]
 	data_lowpass = Filters.movingaverage(data,20)
 	f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True, figsize=(8,4))
 
