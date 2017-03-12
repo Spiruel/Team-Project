@@ -136,7 +136,7 @@ if __name__ == '__main__':
 	#ax2.set_ylabel('Counts', fontsize=16)
 	ax2.set_xlabel('Amplitude / V', fontsize=16)
 
-	xlim = np.max(data)/2
+	xlim = np.max(data)/1.5
 	plt.xlim(-xlim,xlim)
 	plt.text(-1.25*xlim,40000,'Counts', rotation=90, fontsize=16)
 

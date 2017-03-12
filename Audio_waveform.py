@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
-def waveform(data, fs = 1500):
+def waveform(data, fs = 3000):
 	'''data is 1d array of amplitudes for a given time. fs is sampling frequency of the signal'''
 	data_len = len(data)
 	time_array = np.arange(data_len)/fs
 	return (time_array,data)
 	
 	
-def times(data, fs = 1500):
+def times(data, fs = 3000):
 	'''data is 1d array of amplitudes for a given time. fs is sampling frequency of the signal'''
 	data_len = len(data)
 	time_array = np.arange(data_len)/fs
