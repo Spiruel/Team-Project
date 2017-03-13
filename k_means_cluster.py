@@ -135,11 +135,12 @@ def reconstruction_fn(training_data, current_data, segment_length):
 if __name__ == '__main__':
 
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
-	normal_data = Filters.movingaverage(np.loadtxt('data/12v_comparisontobaseline.csv', delimiter=',', comments='#')[:,0][0:8000], window_size=20)
+	normal_data = Filters.movingaverage(np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,0][0:9000], window_size=20)
 	normal_data_av = np.mean(np.abs(normal_data))
-	other_data = Filters.movingaverage(np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')[:,0][16000:32000], window_size=20)
+	other_data = Filters.movingaverage(np.loadtxt('data/large_4V-9A_water.csv', delimiter=',', comments='#',skiprows=1)[:,0][9:18000], window_size=20)
 	other_data_av = np.mean(np.abs(other_data))
 	other_data = other_data*(normal_data_av/other_data_av)
+	#other_data = normal_data ########FOR TESTING
 	################ other_data may need to be normalised to be the same average amplitude as normal_data ##################
 	################ THIS IS VERY IMPORTANT!!!! ####################
 
@@ -171,15 +172,15 @@ if __name__ == '__main__':
 
 	reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
-	n_plot_samples = 3000
+	n_plot_samples = 9000
 
-	error = reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples]
+	error = np.abs(reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples])
 	error_98th_percentile = np.percentile(error, 98)
 	print("Maximum reconstruction error was %.5f" % error.max())
 	print("98th percentile of reconstruction error was %.5f" % error_98th_percentile)
 
 	plt.style.use('seaborn-white')
-	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True)
+	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
 	ax1.plot(other_data[0:n_plot_samples], 'b', lw=1, label="Original")
 	ax2.plot(reconstruction[0:n_plot_samples], 'orange', lw=1, label="Reconstructed")
 	ax3.plot(error[0:n_plot_samples], 'r', lw=1, label="Reconstruction Error")
@@ -188,12 +189,18 @@ if __name__ == '__main__':
 	f.subplots_adjust(hspace=0)
 	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 
-	plt.ylim([-0.005-0.001,0.005+0.001])
+	lim = np.max(np.abs(other_data))
+
+	ax1.set_xlim(0,n_plot_samples)
+	ax1.set_ylim([-lim-0.2*lim,lim+0.2*lim])
+	ax2.set_ylim([-lim-0.2*lim,lim+0.2*lim])
+	ax3.set_ylim(0,0.002)
 	for a in [ax1, ax2, ax3]:
-		a.legend(frameon=False, loc='lower right')
+		a.legend(frameon=False, loc='upper right')
 	ax3.set_xlabel('Samples')
 	ax2.set_ylabel('Amplitude / V')
-	plt.savefig('figures/kmeans.png', bbox_inches='tight', transparent=True)
+	plt.savefig('figures/kmeans_large_4Vwater.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/kmeans_large_4Vwater.png', dpi=300, transparent=True, bbox_inches='tight')
 	plt.show()
 
 	
