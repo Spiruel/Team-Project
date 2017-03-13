@@ -12,6 +12,7 @@ import Find_peaks
 import peakutils
 import lmfit
 from lmfit.models import GaussianModel, ConstantModel, LinearModel, LorentzianModel, Model
+import Lorentz_params as lor
 
 
 
@@ -36,7 +37,7 @@ def conv_to_samples(data, frequencies):
 
 def find_peaks(data):
 	frequencies, sample_rate, amplitudes = params(data)
-	peak_indices = peakutils.indexes(amplitudes, thres=0.1, min_dist=len(data)/20)
+	peak_indices = peakutils.indexes(amplitudes, thres=0.999, min_dist=len(data)/20)
 	peak_freqs =  conv_to_freq(data, peak_indices)
 
 	peak_amplitudes = amplitudes[peak_indices]
@@ -46,14 +47,18 @@ def find_peaks(data):
 
 def gaussian(x, amp, cen, wid):
     "1-d gaussian: gaussian(x, amp, cen, wid)"
-    return (amp/(np.sqrt(2*np.pi)*wid)) * np.exp(-(x-cen)**2 /(2*wid**2))
+    #return (amp/(np.sqrt(2*np.pi)*wid)) * np.exp(-(x-cen)**2 /(2*wid**2))
+    return (amp) * np.exp(-(x-cen)**2 /(2*wid**2))
     #another equation for it could be (amp) * np.exp(-(x-cen)**2 /(2*wid**2)) but the current one we are using makes the total area 
     #under the graph equal to amp, which is what we want. We want to monitor the change in the total amplitude of the peak, summed 
     #over all frequencies.
+    #But for the initial amplitude, we're giving it the actual height! Therefore we need to make sure that amplitude it actually the height!!
 
 def lorentzian(x, amp, cen, wid):
 	"1-d lorentzian: lorentzian(x, amp, cen, wid)"
 	return amp/np.pi * wid/((x-cen)**2 + wid**2)
+	#same reason as Gaussian above
+
 
 def line(x, intercept):
     "line"
@@ -73,7 +78,7 @@ def params(data):
 	T = n / sample_rate
 	frequency = k / T
 	frequency = frequency[range(np.int(n/2))]
-	lowcut = 0
+	lowcut = 30
 	Y = fourier_transform(amplitude, sample_rate, lowcut)
 	Y_av = Filters.movingaverage(Y, 10) 
 	return frequency, sample_rate, Y_av
@@ -99,39 +104,10 @@ Fourier space
 def fourier_transform(amplitude, sample_rate, lowcut):
 	'''returns power spectral density of a time series data set'''
 	dat = butter_highpass_filter(amplitude, lowcut, sample_rate)
-	Y = fft(dat) / len(amplitude)
+	Y = fft(dat) / np.sqrt(len(amplitude)) #sqrt because it gets squared in the next line. But we want the overall thing divided by len(amplitude) to normlise it
 	Y = abs(Y[range(np.int(len(amplitude)/2))])**2 #making sure it is the power spectral density PSD.
 	return Y
 	
-'''
-Function used to optimise the Lorentzian parameters
-'''
-def residuals(p, Y_av, frequency):
-	err = Y_av - lorentzian(frequency, p)
-	return err
-	
-'''
-Function to return the background noise of the data
-'''
-def background_subtraction(Y_av, frequency, sample_rate):
-	ind_bg_low = (frequency > min(frequency)) & (frequency < frequency[peak_finder(frequency, Y_av, sample_rate)[2]]-20) #defining background
-	ind_bg_high = (frequency > frequency[peak_finder(frequency, Y_av, sample_rate)[2]]+20) & (frequency < max(frequency))
-	frequency_bg = np.concatenate((frequency[ind_bg_low], frequency[ind_bg_high]))
-	Y_bg = np.concatenate((Y_av[ind_bg_low], Y_av[ind_bg_high]))
-	m, c = np.polyfit(frequency_bg, Y_bg, 1)
-	background = m * frequency + c
-	Y_bg_corr = Y_av - background
-	return background, Y_bg_corr
-
-'''
-Performs a Lorentzian fit using optimized parameters using least squares
-'''
-def optimization(frequency, p, Y_av, sample_rate):
-	pbest = leastsq(residuals, p, args = (Y_av, frequency), full_output = 1)
-	best_parameters = pbest[0]
-	p_new = (best_parameters[0], best_parameters[1], peak_finder(frequency, Y_av, sample_rate)[1] - background_subtraction(Y_av, frequency, sample_rate)[0])
-	fit = lorentzian(frequency, p_new)
-	return fit
 
 def fit_peaks(data):
 	frequencies, sample_rate, amplitudes = params(data)
@@ -144,7 +120,7 @@ def fit_peaks(data):
 
 	min_freq, max_freq = peak_freq-30, peak_freq+30
 
-	mod = Model(lorentzian) + Model(line)
+	mod = Model(gaussian) + Model(line)
 	pars  = mod.make_params(amp=peak_amp, cen=peak_freq, wid=5, intercept=0)
 
 	amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -170,8 +146,8 @@ def fit_peaks(data):
 
 			min_freq, max_freq = peak_freq-30, peak_freq+30
 
-			mod = Model(lorentzian) + Model(line)
-			pars  = mod.make_params(amp=peak_amp, cen=peak_freq, wid=5, intercept=0)
+			mod = Model(gaussian) + Model(line)
+			pars  = mod.make_params(amp=peak_amp, cen=peak_freq, wid=2, intercept=0)
 
 			amp_range = amplitudes[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
 			freq_range = frequencies[conv_to_samples(data,min_freq):conv_to_samples(data,max_freq)]
@@ -201,7 +177,9 @@ def mult_channels(data):
 	return np.array([chan1, chan2, chan3])
 
 if __name__ == '__main__':
-	data = np.loadtxt('data/large_20V.csv', delimiter=',', comments='#')[:,1]
+	data = np.loadtxt('data/rusty_12V.csv', delimiter=',', comments='#')[:,1]
+
+	data = lor.split(data)[0]
 
 	frequencies, sample_rate, amplitudes = params(data)
 	
@@ -226,9 +204,9 @@ if __name__ == '__main__':
 			(amplitude,centre,sigma,c) = output[0]
 			(amplitude_err, centre_err, sigma_err, c_err) = output[1]
 			peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
-			fit = lorentzian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, c)
+			fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, c)
 
-			plt.plot(peak_plotting_freqs, fit, label='Lorentzian', color='black')
+			plt.plot(peak_plotting_freqs, fit, label='Gaussian', color='black')
 
 		else:
 			for i in range(len(peak_indices)):
@@ -239,8 +217,8 @@ if __name__ == '__main__':
 				print 'percentage errors = ', percent_err
 				#amplitude = amplitude*np.sqrt(2*np.pi)*sigma
 				peak_plotting_freqs = np.arange(centre-3*sigma,centre+3*sigma,1)
-				fit = lorentzian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, c)
-				plt.plot(peak_plotting_freqs, fit, label='Lorentzian'+str(i+1), color='black')
+				fit = gaussian(peak_plotting_freqs,amplitude,centre,sigma) + line(peak_plotting_freqs, c)
+				plt.plot(peak_plotting_freqs, fit, label='Gaussian'+str(i+1), color='black')
 	plt.xlabel(r'$f$ / $Hz$', fontsize = 18)    
 	plt.ylabel('Intensity $(a.u.)$', fontsize = 18)
 	plt.legend()

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import n_peaks_lorentzian as peaks
 import scipy
+import Lorentz_params as lor
 
 if __name__ == '__main__':
 
@@ -10,8 +11,14 @@ if __name__ == '__main__':
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)
 
+	#chan1new = chan1[20000:30000]
+	chan1 = lor.split(chan1)[0]
+
 	frequencies1, sample_rate1, amplitudes1 = peaks.params(chan1)
 	peak_indices1, peak_freqs1, peak_amplitudes1 = peaks.find_peaks(chan1)
+
+	'''frequencies1new, sample_rate1new, amplitudes1new = peaks.params(chan1new)
+	peak_indices1new, peak_freqs1new, peak_amplitudes1new = peaks.find_peaks(chan1new)''' #testing normalisation
 
 
 	frequencies2, sample_rate2, amplitudes2 = peaks.params(chan2)
@@ -25,6 +32,7 @@ if __name__ == '__main__':
 
 	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False, figsize=(8,6))
 	ax1.semilogy(frequencies1, amplitudes1, color ='blue')
+	#ax1.semilogy(frequencies1new, amplitudes1new, color ='black')
 	#ax1.semilogy(peak_freqs1, peak_amplitudes1, 'ko', markersize=10)
 
 	ax2.semilogy(frequencies2, amplitudes2, color='red')
