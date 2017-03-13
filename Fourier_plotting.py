@@ -6,7 +6,7 @@ import scipy
 
 if __name__ == '__main__':
 
-	data = np.loadtxt('data/1minute_baseline.csv', delimiter=',', comments='#')
+	data = np.loadtxt('data/rusty_12V.csv', delimiter=',', comments='#',skiprows=1)
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
 	#### plotting
 
-	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
+	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False, figsize=(8,6))
 	ax1.semilogy(frequencies1, amplitudes1, color ='blue')
 	#ax1.semilogy(peak_freqs1, peak_amplitudes1, 'ko', markersize=10)
 
@@ -53,8 +53,9 @@ if __name__ == '__main__':
 
 	plt.style.use('seaborn-white')
 
+	plt.savefig('figures/freq_theory.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/freq_theory.png', dpi=300, transparent=True, bbox_inches='tight')
 
 	plt.show()
 
-	#plt.savefig('figures/freq_theory.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	#plt.savefig('figures/freq_theory.png', dpi=300, transparent=True, bbox_inches='tight')
+
