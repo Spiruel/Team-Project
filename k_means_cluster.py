@@ -4,12 +4,13 @@ import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import Filters
+from random import randint
 
 from sklearn.cluster import KMeans
 
 clusterer = KMeans(n_clusters=150) 
 
-segment_len = 12
+segment_len = 24
 slide_len = 2
 
 def sliding_chunker(input_data, segment_length, slide_length):
@@ -41,8 +42,8 @@ def plot_waves(waves, step):
     Plot a set of 9 waves from the given set, starting from the first one
     and increasing in index by 'step' for each subsequent graph
     """
-    plt.figure()
-    n_graph_rows = 3
+    f = plt.figure(figsize=(8,4))
+    n_graph_rows = 1
     n_graph_cols = 3
     graph_n = 1
     wave_n = 0
@@ -55,6 +56,8 @@ def plot_waves(waves, step):
             wave_n += step
     # fix subplot sizes so that everything fits
     plt.tight_layout()
+    f.subplots_adjust(hspace=0)
+    plt.style.use('seaborn-white')
     plt.show()
 
 def cluster_centroids(windowed_segments):
@@ -144,7 +147,6 @@ if __name__ == '__main__':
 	################ other_data may need to be normalised to be the same average amplitude as normal_data ##################
 	################ THIS IS VERY IMPORTANT!!!! ####################
 
-	segment_len = 12
 	centroids = synthetic(normal_data, segment_len)
 
 	# fig = plt.figure()
@@ -170,7 +172,7 @@ if __name__ == '__main__':
 	# plt.legend(frameon=False)
 	# plt.show()
 
-	reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
+	'''reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
 	n_plot_samples = 9000
 
@@ -199,14 +201,77 @@ if __name__ == '__main__':
 		a.legend(frameon=False, loc='upper right')
 	ax3.set_xlabel('Samples')
 	ax2.set_ylabel('Amplitude / V')
-	plt.savefig('figures/kmeans_large_4Vwater.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/kmeans_large_4Vwater.png', dpi=300, transparent=True, bbox_inches='tight')
+	#plt.savefig('figures/kmeans_large_4Vwater.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	#plt.savefig('figures/kmeans_large_4Vwater.png', dpi=300, transparent=True, bbox_inches='tight')
 	plt.show()
 
 	
 	distances = clusterer.inertia_
-	print distances
+	print distances'''
 
+
+	################ Plotting random windows 
+
+	initial_segments = sliding_chunker(normal_data,segment_len,slide_len)
+	windowed_segments = windowed_segments_fn(initial_segments,segment_len)
+	norm_winds = windowed_segments
+
+	clusters = cluster_centroids(windowed_segments)
+	norm_clust =  clusters
+
+	#plot_waves(windowed_segments,step=50)
+	#plot_waves(clusters,step=3)
+
+	f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
+	axarr[0,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[0,1].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[0,2].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[0,3].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[0,4].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+
+	axarr[1,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[1,1].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[1,2].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[1,3].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+	axarr[1,4].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+
+	plt.subplots_adjust(wspace=0.1, hspace=0.1)
+
+	f.text(0.5,0.0,'Element in Segment',ha='center', fontsize = '14')
+	f.text(0.07,0.5,'Amplitude / mV',va='center', fontsize = '14', rotation = 'vertical')
+
+	plt.style.use('seaborn-white')
+
+	plt.savefig('figures/kmeans_training.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/kmeans_training.png', dpi=300, transparent=True, bbox_inches='tight')
+
+	#plt.show()
+
+	#plt.clf()
+	f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
+	axarr[0,0].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[0,1].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[0,2].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[0,3].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[0,4].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+
+	axarr[1,0].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[1,1].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[1,2].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[1,3].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+	axarr[1,4].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+
+	plt.subplots_adjust(wspace=0.1, hspace=0.1)
+
+	f.text(0.5,0.0,'Element in Segment',ha='center', fontsize = '14')
+	f.text(0.07,0.5,'Amplitude / mV',va='center', fontsize = '14', rotation = 'vertical')
+
+	plt.style.use('seaborn-white')
+
+	plt.savefig('figures/kmeans_synthetic.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/kmeans_synthetic.png', dpi=300, transparent=True, bbox_inches='tight')
+
+	plt.show()
 
 	##### Looking at a single segment and the quality of fit
 	'''new_slide_len = int(segment_len/2)
@@ -229,8 +294,8 @@ if __name__ == '__main__':
 	plt.plot(windowed_segment, label="Windowed segment")
 	plt.plot(nearest_centroid, label="Nearest centroid")
 	plt.legend()
-	plt.show()'''
+	plt.show()
 
 	#### plotting windowed segments and synthetic ones
-	'''plot_waves(windowed_segments, step=3)
+	plot_waves(windowed_segments, step=3)
 	plot_waves(cluster_centroids, step=3)'''
