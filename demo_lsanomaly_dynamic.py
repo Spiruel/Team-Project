@@ -1,14 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Least squares anomaly detection in sequences.
-
-Example of detecting periods of abnormality in a time series of physiological
-measurements.
-
-Created on Fri Apr 12 13:34:28 2013
-
-@author: John Quinn <jquinn@cit.ac.ug>
-"""
 import numpy as np
 import lsanomaly
 import scipy.signal
