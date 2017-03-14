@@ -140,7 +140,7 @@ if __name__ == '__main__':
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 	normal_data = Filters.movingaverage(np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,0][0:9000], window_size=20)
 	normal_data_av = np.mean(np.abs(normal_data))
-	other_data = Filters.movingaverage(np.loadtxt('data/large_4V-9A_water.csv', delimiter=',', comments='#',skiprows=1)[:,0][9:18000], window_size=20)
+	other_data = Filters.movingaverage(np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,0][9000:18000], window_size=20)
 	other_data_av = np.mean(np.abs(other_data))
 	other_data = other_data*(normal_data_av/other_data_av)
 	#other_data = normal_data ########FOR TESTING
@@ -172,17 +172,17 @@ if __name__ == '__main__':
 	# plt.legend(frameon=False)
 	# plt.show()
 
-	'''reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
+	reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
 	n_plot_samples = 9000
 
-	error = np.abs(reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples])
+	error = reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples]
 	error_98th_percentile = np.percentile(error, 98)
 	print("Maximum reconstruction error was %.5f" % error.max())
 	print("98th percentile of reconstruction error was %.5f" % error_98th_percentile)
 
 	plt.style.use('seaborn-white')
-	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
+	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False, figsize=(8,4))
 	ax1.plot(other_data[0:n_plot_samples], 'b', lw=1, label="Original")
 	ax2.plot(reconstruction[0:n_plot_samples], 'orange', lw=1, label="Reconstructed")
 	ax3.plot(error[0:n_plot_samples], 'r', lw=1, label="Reconstruction Error")
@@ -196,23 +196,26 @@ if __name__ == '__main__':
 	ax1.set_xlim(0,n_plot_samples)
 	ax1.set_ylim([-lim-0.2*lim,lim+0.2*lim])
 	ax2.set_ylim([-lim-0.2*lim,lim+0.2*lim])
-	ax3.set_ylim(0,0.002)
+	ax3.set_ylim([-lim-0.2*lim,lim+0.2*lim])
 	for a in [ax1, ax2, ax3]:
 		a.legend(frameon=False, loc='upper right')
-	ax3.set_xlabel('Samples')
-	ax2.set_ylabel('Amplitude / V')
-	#plt.savefig('figures/kmeans_large_4Vwater.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	#plt.savefig('figures/kmeans_large_4Vwater.png', dpi=300, transparent=True, bbox_inches='tight')
+	ax3.set_xlabel('Samples',fontsize=14)
+	ax2.set_ylabel('Amplitude / V',fontsize=14)
+
+	plt.style.use('seaborn-white')
+
+	plt.savefig('figures/kmeans_large_4Vnowater.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/kmeans_large_4Vnowater.png', dpi=300, transparent=True, bbox_inches='tight')
 	plt.show()
 
 	
 	distances = clusterer.inertia_
-	print distances'''
+	print distances
 
 
 	################ Plotting random windows 
 
-	initial_segments = sliding_chunker(normal_data,segment_len,slide_len)
+	'''initial_segments = sliding_chunker(normal_data,segment_len,slide_len)
 	windowed_segments = windowed_segments_fn(initial_segments,segment_len)
 	norm_winds = windowed_segments
 
@@ -271,7 +274,7 @@ if __name__ == '__main__':
 	plt.savefig('figures/kmeans_synthetic.pdf', dpi=300, transparent=True, bbox_inches='tight')
 	plt.savefig('figures/kmeans_synthetic.png', dpi=300, transparent=True, bbox_inches='tight')
 
-	plt.show()
+	plt.show()'''
 
 	##### Looking at a single segment and the quality of fit
 	'''new_slide_len = int(segment_len/2)

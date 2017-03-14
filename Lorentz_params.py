@@ -29,14 +29,6 @@ def healthy_params(healthy_data):
 
 if __name__ == '__main__':
 
-	#slice up healthy motor data into segments of about 3 secs
-
-	#get lorentzian parameters for each segment - create a database of healthy motor parameters
-
-	#slice unhealthy motor data into 3 second chunks and find lorentzian parameters for each. 
-
-	#add each unhealthy set of paramaters to dataase of healthy parameters and perform simple standard deviation test to see if A, HWHM or centre deviate significantly.
-
 	data = np.loadtxt('data/large_20V.csv', delimiter=',', comments='#',skiprows=1)
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)

@@ -78,7 +78,7 @@ def params(data):
 	T = n / sample_rate
 	frequency = k / T
 	frequency = frequency[range(np.int(n/2))]
-	lowcut = 30
+	lowcut = 0
 	Y = fourier_transform(amplitude, sample_rate, lowcut)
 	Y_av = Filters.movingaverage(Y, 10) 
 	return frequency, sample_rate, Y_av

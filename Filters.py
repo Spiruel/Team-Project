@@ -61,7 +61,7 @@ if __name__ == '__main__':
 	cutoff = 50  # desired cutoff frequency of the filter, Hz
 
 	
-	data = np.loadtxt('data/large_0V.csv', delimiter=',', comments='#',skiprows=1)[:,1][0:5000]
+	data = np.loadtxt('data/reference12V.csv', delimiter=',', comments='#',skiprows=1)[:,1]#[0:5000]
 	freqs_and_amps = Fourier.fourier(data, fs)
 	freqs = freqs_and_amps[0]
 	amplitudes = freqs_and_amps[1]

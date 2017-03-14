@@ -123,7 +123,7 @@ def dev_of_Lor(HWHM, peak_centre, intensity):
 if __name__ == '__main__':
 
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
-	data = np.loadtxt('data/large_4V-9A_water.csv', delimiter=',', comments='#',skiprows=1)[:,2][0:50000]
+	data = np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,1]
 	data_lowpass = Filters.movingaverage(data,20)
 	f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True, figsize=(8,4))
 
@@ -134,19 +134,19 @@ if __name__ == '__main__':
 
 	ax2.hist(data_lowpass, bins=10, color='#C70039')
 	#ax2.set_ylabel('Counts', fontsize=16)
-	ax2.set_xlabel('Amplitude / V', fontsize=16)
+	ax2.set_xlabel('Amplitude / V', fontsize=14)
 
 	xlim = np.max(data)/1.5
 	plt.xlim(-xlim,xlim)
-	plt.text(-1.25*xlim,40000,'Counts', rotation=90, fontsize=16)
+	plt.text(-1.25*xlim,42000,'Counts', rotation=90, fontsize=14)
 
 	plt.style.use('seaborn-white')
 
 	f.subplots_adjust(hspace=0)
 	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 
-	#plt.savefig('figures/moving_av_hist.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	#plt.savefig('figures/moving_av_hist.png', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/moving_av_hist.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/moving_av_hist.png', dpi=300, transparent=True, bbox_inches='tight')
 
 	plt.show()
 
