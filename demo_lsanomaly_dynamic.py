@@ -1,18 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Least squares anomaly detection in sequences.
-
-Example of detecting periods of abnormality in a time series of physiological
-measurements.
-
-Created on Fri Apr 12 13:34:28 2013
-
-@author: John Quinn <jquinn@cit.ac.ug>
-"""
 import numpy as np
 import lsanomaly
 import scipy.signal
-import pylab as plt
+import matplotlib.pyplot as plt
         
 def movingaverage(interval, window_size):
 	window = np.ones(int(window_size))/float(window_size)
@@ -26,10 +15,8 @@ def movingaverage(interval, window_size):
  
 window_size = 100
 			   
-data = np.loadtxt(r'C:\Users\alexa\Dropbox\TracerCo project team folder\Large motor\specific_anomaly_test3.csv', delimiter=',', usecols=[0])
-print len(data)
-a, b = data[0:55000], data[55000:110000]
-print len(a), len(b)
+a = np.loadtxt(r'D:\Users\Samuel\Dropbox\TracerCo project team folder\12V motor\motornorm12V.csv', delimiter=',', usecols=[0])[:21600]
+b = np.loadtxt(r'D:\Users\Samuel\Dropbox\TracerCo project team folder\12V motor\WD40_after paper_12V.csv', delimiter=',', usecols=[0])[:21600]
 a = movingaverage(a, window_size)
 b = movingaverage(b, window_size)
 X = np.c_[a,b]
@@ -67,29 +54,43 @@ A = np.array([[.999, .001],[.01, .99]])
 pi = np.array([.5,.5])
 y_pred_dynamic = anomalymodel.predict_sequence(X_test, A, pi)
 #help(anomalymodel.predict_sequence(X_test, A, pi))
-plt.clf()
 
-plt.subplot(3,1,1)
-plt.plot(X_test[:,1])
-plt.ylabel('Train Data')
-plt.grid(which='major',axis='x')
-plt.xticks(plt.xticks()[0],'', fontsize = 8)
-plt.title('Detection of anomalies in 12V motor')
+plt.style.use('seaborn-white')
+f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True, figsize=(8,4))
+ax1.plot(X_test[:,1], 'b', label='Train Data')
+ax2.plot(X_test[:,3], 'orange', label='Test Data')
+ax3.plot(y_pred_static[:,1],'r', label='Anomaly Score')
+# Fine-tune figure; make subplots close to each other and hide x ticks for
+# all but bottom plot.
+f.subplots_adjust(hspace=0)
+plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 
-plt.subplot(3,1,2)
-plt.plot(X_test[:,3])     
-plt.grid(which='major',axis='x')
-plt.xticks(plt.xticks()[0],'', fontsize = 8)
-plt.ylabel('Test Data')
+for a in [ax1, ax2, ax3]:
+	a.legend(frameon=False, loc='lower right')
+	#a.set_ylim([-0.16,0.16])
+	
+ax3.set_xlabel('Samples', fontsize=14)
+ax2.set_ylabel('Amplitude / V', fontsize=14)
 
-plt.subplot(3,1,3)
-plt.plot(y_pred_static[:,1],'r')
-plt.xticks(plt.xticks()[0],'', fontsize = 8)
-plt.grid(which='major',axis='both')
-#plt.ylim([-.05,1.05])
-plt.ylabel('Anomaly score\n(static)')
-plt.ylim(0, 0.1)
+# ax1 = plt.subplot(311)
+# plt.plot(X_test[:,1], label='Train Data')
+# plt.xticks(plt.xticks()[0], '', fontsize=8)
+# plt.ylim(-0.003, 0.003)
+# plt.yticks([-0.003, 0, 0.003])
 
+# ax2 = plt.subplot(312, sharex=ax1, sharey=ax1)
+# plt.plot(X_test[:,3], label='Test Data')     
+# plt.xticks(plt.xticks()[0],'', fontsize=8)
+# plt.ylim(-0.003, 0.003)
+# plt.yticks([-0.003, 0, 0.003])
+
+
+# ax3 = plt.subplot(313, sharex=ax1)
+# plt.plot(y_pred_static[:,1],'r')
+# plt.xticks(plt.xticks()[0],'', fontsize=8)
+# plt.ylabel('Anomaly score\n(static)')
+# plt.legend(frameon=True, loc='upper right')
+# plt.yticks([0.0, 0.0002, 0.0004, 0.0006])
+
+plt.savefig('figures/lsanomaly.pdf', dpi=300, transparent=True, bbox_inches='tight')
 plt.show()
-    
-    
