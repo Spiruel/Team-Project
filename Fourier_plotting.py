@@ -7,7 +7,7 @@ import Lorentz_params as lor
 
 if __name__ == '__main__':
 
-	data = np.loadtxt('data/large_0V.csv', delimiter=',', comments='#',skiprows=1)
+	data = np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)
 
@@ -61,8 +61,8 @@ if __name__ == '__main__':
 
 	plt.style.use('seaborn-white')
 
-	plt.savefig('figures/freq_large_0V.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/freq_large_0V.png', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/freq_large_4Vnowater.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/freq_large_4Vnowater.png', dpi=300, transparent=True, bbox_inches='tight')
 
 	plt.show()
 

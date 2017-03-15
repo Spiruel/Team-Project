@@ -145,8 +145,8 @@ if __name__ == '__main__':
 	f.subplots_adjust(hspace=0)
 	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 
-	plt.savefig('figures/moving_av_hist.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/moving_av_hist.png', dpi=300, transparent=True, bbox_inches='tight')
+	#plt.savefig('figures/moving_av_hist.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	#plt.savefig('figures/moving_av_hist.png', dpi=300, transparent=True, bbox_inches='tight')
 
 	plt.show()
 
@@ -191,6 +191,8 @@ if __name__ == '__main__':
 	#data_lowpass = np.column_stack((Filters.movingaverage(data[:,0],50), Filters.movingaverage(data[:,1],50), Filters.movingaverage(data[:,2],50)))
 
 	anomaly_indices = grubbs(data_lowpass)
+	anom_amplitudes = data_lowpass[anomaly_indices]
+	anom_times = anomaly_indices/fs
 	print anomaly_indices
 
 	times = Audio_waveform.waveform(data_lowpass,fs)[0]
@@ -201,6 +203,8 @@ if __name__ == '__main__':
 
 	plt.plot(times,data_lowpass)
 	#[plt.plot(anom_times[i],anom_amplitudes[i],'ro',markersize = 10) for i in range(len(data_lowpass.T))]
+
+	plt.plot(anom_times, anom_amplitudes)
 
 	plt.xlabel('Time/s')
 	plt.ylabel('Amplitude')

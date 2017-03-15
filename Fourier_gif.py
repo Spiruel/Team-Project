@@ -73,7 +73,7 @@ if __name__ == '__main__':
 		ax11.semilogy(frequencies2,amplitudes2, color='red')'''
 
 		#plt.savefig('figures/freq_large_0V'+str(i)+'.pdf', dpi=300, transparent=True, bbox_inches='tight')
-		plt.savefig('figures/gifs/freq_rusty_12V'+str(i)+'.png', dpi=300, transparent=True, bbox_inches='tight')
+		plt.savefig('figures/gifs/freq_rusty_12V'+str(i)+'.png', dpi=300, transparent=False, bbox_inches='tight')
 
 		#plt.show()
 

@@ -34,7 +34,7 @@ if __name__ == '__main__':
 	chan1, chan2, chan3 = peaks.mult_channels(data)
 
 	healthy_amps, healthy_centres, healthy_widths, healthy_offsets =  healthy_params(chan1)
-	print 'amplitude = ', np.mean(healthy_amps), ' +/- ', np.std(healthy_amps)
-	print 'centres = ', np.mean(healthy_centres), ' +/- ', np.std(healthy_centres)
-	print 'widths = ', np.mean(healthy_widths), ' +/- ', np.std(healthy_widths)
+	print 'amplitude = ', np.mean(healthy_amps), ' +/- ', np.std(healthy_amps)/np.sqrt(len(healthy_amps))
+	print 'centres = ', np.mean(healthy_centres), ' +/- ', np.std(healthy_centres)/np.sqrt(len(healthy_centres))
+	print 'widths = ', np.mean(healthy_widths), ' +/- ', np.std(healthy_widths)/np.sqrt(len(healthy_widths))
 
