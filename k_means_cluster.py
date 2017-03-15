@@ -108,6 +108,7 @@ def fitting(fitting_data, centroids, segment_length):
 def reconstruction_fn(training_data, current_data, segment_length=24):
 	'''training_data is the normal data taken from a healthy motor, in order to create your synthetic set of shapes described by the centroids.
 	Current_data is then the data that you are trying to fit the synthetic reconstructed data to'''
+
 	fitting_segments = sliding_chunker(training_data, segment_length=segment_len, slide_length=slide_len)
 	windowed_segments = windowed_segments_fn(fitting_segments, segment_length=segment_len)
 
@@ -140,7 +141,7 @@ if __name__ == '__main__':
 	#testinwater = np.loadtxt('data/testinwater.csv', delimiter=',', comments='#')
 	normal_data = Filters.movingaverage(np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,0][0:9000], window_size=20)
 	normal_data_av = np.mean(np.abs(normal_data))
-	other_data = Filters.movingaverage(np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,0][9000:18000], window_size=20)
+	other_data = Filters.movingaverage(np.loadtxt('data/large_4V-9A_water.csv', delimiter=',', comments='#',skiprows=1)[:,0][9000:18000], window_size=20)
 	other_data_av = np.mean(np.abs(other_data))
 	other_data = other_data*(normal_data_av/other_data_av)
 	#other_data = normal_data ########FOR TESTING

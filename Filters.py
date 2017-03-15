@@ -61,12 +61,12 @@ if __name__ == '__main__':
 	cutoff = 50  # desired cutoff frequency of the filter, Hz
 
 	
-	data = np.loadtxt('data/reference12V.csv', delimiter=',', comments='#',skiprows=1)[:,1]#[0:5000]
+	data = np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1)[:,1][0:1000]
 	freqs_and_amps = Fourier.fourier(data, fs)
 	freqs = freqs_and_amps[0]
 	amplitudes = freqs_and_amps[1]
 	other_amplitudes = Fourier.fourier_transform(data)
-	smoothed_amps = movingaverage(amplitudes,20)
+	smoothed_amps = movingaverage(amplitudes,10)
 
 	f = plt.figure(figsize=(8,4))
 	ax1 = plt.subplot(211)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
 	#plt.savefig('figures/freq_moving_average.pdf', dpi=300, transparent=True, bbox_inches='tight')
 	#plt.savefig('figures/freq_moving_average.png', dpi=300, transparent=True, bbox_inches='tight')
-	plt.show()
+	#plt.show()
 
 	#y = butter_lowpass_filter(data, cutoff, fs, order)
 	
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
 	times = am.times(data, fs)
 	
-	average = movingaverage(data,20)
+	average = movingaverage(data,10)
 
 	plt.figure(figsize=(10,2))
 	
@@ -116,6 +116,6 @@ if __name__ == '__main__':
 
 
 	plt.style.use('seaborn-white')
-	#plt.savefig('figures/moving_average.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	#plt.savefig('figures/moving_average.png', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/moving_average.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/moving_average.png', dpi=300, transparent=True, bbox_inches='tight')
 	plt.show()

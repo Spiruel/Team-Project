@@ -12,8 +12,8 @@ def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
 	
-dir = "D:\Users\Samuel\Dropbox\TracerCo project team folder\\"
-dir1 = r'Large motor\\'
+dir = "/Users/teodortzokov/Dropbox/TracerCo project team folder/"
+dir1 = r'Large motor/'
 test_name = 'large_30V_5mins.csv'
 train_name = 'large_4V_nowater.csv'
 
@@ -75,8 +75,9 @@ ax1.plot(times[histo_anomalies], np.linspace(displacement,displacement,len(histo
 displacement += 1
 
 print 'Doing k_means test...'
-reconstruction = reconstruction_fn(training_lowpass[:9000],data_lowpass)
-recon_error = reconstruction - data_lowpass
+data_lowpass_norm = data_lowpass * (np.mean(np.abs(training_lowpass))/np.mean(np.abs(data_lowpass)))
+reconstruction = reconstruction_fn(training_lowpass[:9000],data_lowpass_norm)
+recon_error = reconstruction - data_lowpass_norm
 K_anomalies = np.array(np.where(np.abs(recon_error) >= 5*np.std(recon_error))[0])
 print 'anom_indices:', K_anomalies
 ax1.plot(times[K_anomalies], np.linspace(displacement,displacement,len(K_anomalies)), '.', label='k_means', marker=marker.next())
@@ -86,5 +87,5 @@ ax1.set_xticks([]); ax1.set_yticks([])
 ax1.set_ylim([-1,5])
 plt.gcf().subplots_adjust(hspace=.1)
 
-plt.savefig('comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
+plt.savefig('figures/comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
 plt.show()

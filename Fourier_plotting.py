@@ -7,9 +7,9 @@ import Lorentz_params as lor
 
 if __name__ == '__main__':
 
-	file_name = 'large_self_repair_2'
+	file_name = 'gears_removed_snipped1'
 
-	data = np.loadtxt('/Users/teodortzokov/Dropbox/TracerCo project team folder/Large motor/'+file_name+'.csv', delimiter=',', comments='#',skiprows=1) 
+	data = np.loadtxt('/Users/teodortzokov/Dropbox/TracerCo project team folder/Gears removed/'+file_name+'.csv', delimiter=',', comments='#',skiprows=1) 
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
 	#### plotting
 
-	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True, figsize=(8,4))
+	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True, figsize=(5,4))
 	ax1.semilogy(frequencies1, amplitudes1, color ='blue')
 	#ax1.semilogy(frequencies1new, amplitudes1new, color ='black')
 	#ax1.semilogy(peak_freqs1, peak_amplitudes1, 'ko', markersize=10)
@@ -47,12 +47,18 @@ if __name__ == '__main__':
 	ax1.set_ylabel('$x$ $axis$', fontsize=14)
 	ax2.set_ylabel('$|FFT|^2$ / V$^2$$\;$Hz$^{-1}$ \n $y$ $axis$', fontsize=14)
 	ax3.set_ylabel('$z$ $axis$', fontsize=14)
+
 	# Fine-tune figure; make subplots close to each other and hide x ticks for
 	# all but bottom plot.
 	f.subplots_adjust(hspace=0)
 	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 	ax3.set_xlim(0,1500)
+	#ax1.set_ylim(0.00002,200)
+	#ax2.set_ylim(0.00002,200)
+	#ax3.set_ylim(0.00002,200)
 	plt.xlabel('Frequency / Hz', fontsize=14)
+
+	#plt.yticks([])
 
 	'''left, bottom, width, height = [0.6, 0.43, 0.25, 0.15]
 	ax11 = f.add_axes([left, bottom, width, height])
@@ -63,8 +69,8 @@ if __name__ == '__main__':
 
 	plt.style.use('seaborn-white')
 
-	plt.savefig('figures/'+file_name+'.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/'+file_name+'.png', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/frequency/'+file_name+'.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/frequency/'+file_name+'.png', dpi=300, transparent=True, bbox_inches='tight')
 
 	plt.show()
 

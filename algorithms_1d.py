@@ -114,7 +114,7 @@ def dev_of_Lor(HWHM, peak_centre, intensity):
 
 	HWHM_anomalies = np.where(HWHM_diff > 3*np.std(HWHM))[0]
 	peak_centre_anomalies = np.where(peak_centre_diff > 2*np.std(peak_centre))[0]
-	intensity_anomalies = np.where(intensity_diff > 2*np.std(intensity))[0]
+	intensity_anomalies = np.where(intensity_diff > 3*np.std(intensity))[0]
 
 	return (HWHM_anomalies,peak_centre_anomalies,intensity_anomalies)
 
