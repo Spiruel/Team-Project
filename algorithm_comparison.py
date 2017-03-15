@@ -12,15 +12,20 @@ def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
 	
-training_data = np.loadtxt('data/large_4V_nowater.csv', delimiter=',', comments='#',skiprows=1, usecols=[0])
+dir = "D:\Users\Samuel\Dropbox\TracerCo project team folder\\"
+dir1 = r'Large motor\\'
+test_name = 'large_30V_5mins.csv'
+train_name = 'large_4V_nowater.csv'
+
+training_data = np.loadtxt(dir + dir1 + train_name, delimiter=',', comments='#',skiprows=1, usecols=[0])
 training_lowpass = Filters.movingaverage(training_data,20)
-data = np.loadtxt('data/large_30V_5mins.csv', delimiter=',', comments='#',skiprows=1, usecols=[0])
+data = np.loadtxt(dir + dir1 + test_name, delimiter=',', comments='#',skiprows=1, usecols=[0])
 data_lowpass = Filters.movingaverage(data,20)
 
 #data_lowpass = np.c_[data_lowpass, np.zeros(len(data_lowpass)), np.zeros(len(data_lowpass))]
 times, amps = waveform(data_lowpass)
 
-marker = itertools.cycle(('.', '+', 's', '*', '>')) 
+marker = itertools.cycle(('^', '*', 'X', 'D', '+')) 
 
 fig = plt.figure(figsize=(8,4))
 gs = gridspec.GridSpec(2,1, height_ratios=[1, 3])
@@ -76,10 +81,10 @@ K_anomalies = np.array(np.where(np.abs(recon_error) >= 5*np.std(recon_error))[0]
 print 'anom_indices:', K_anomalies
 ax1.plot(times[K_anomalies], np.linspace(displacement,displacement,len(K_anomalies)), '.', label='k_means', marker=marker.next())
 
-ax1.legend(frameon=False, bbox_to_anchor=(0.575, -2), loc=2, borderaxespad=0.)
+ax1.legend(bbox_to_anchor=(0.01, -2.2), loc=2, borderaxespad=0., ncol=2)
 ax1.set_xticks([]); ax1.set_yticks([])
 ax1.set_ylim([-1,5])
 plt.gcf().subplots_adjust(hspace=.1)
 
-# plt.savefig('figures/algo_comparison.pdf', dpi=300, bbox_inches='tight', transparent=True)
+plt.savefig('comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
 plt.show()
