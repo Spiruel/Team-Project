@@ -105,7 +105,7 @@ def fitting(fitting_data, centroids, segment_length):
 	return reconstruction
 
 
-def reconstruction_fn(training_data, current_data, segment_length):
+def reconstruction_fn(training_data, current_data, segment_length=24):
 	'''training_data is the normal data taken from a healthy motor, in order to create your synthetic set of shapes described by the centroids.
 	Current_data is then the data that you are trying to fit the synthetic reconstructed data to'''
 	fitting_segments = sliding_chunker(training_data, segment_length=segment_len, slide_length=slide_len)

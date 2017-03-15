@@ -82,7 +82,7 @@ def stddev_from_moving_average(timeseries):
 	expAverage = series.rolling(window=50,center=False).mean()
 	stdDev = series.rolling(window=50,center=False).std()
 
-	indices_bool = np.abs(series - expAverage) > 4 * stdDev
+	indices_bool = np.abs(series - expAverage) > 3 * stdDev
 
 	# indices = np.where(indices_bool)
 	indices = np.array([np.where(column)[0] for column in indices_bool.T])

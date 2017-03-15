@@ -24,7 +24,7 @@ def median_absolute_deviation(timeseries):
 	# The test statistic is infinite when the median is zero,
 	# so it becomes super sensitive. We play it safe and skip when this happens.
 
-	anomalies = np.where(normalised_median_deviation > 6)[0]
+	anomalies = np.where(normalised_median_deviation > 20)[0]
 	#anomalies = np.array([np.where(column > 6)[0] for column in normalised_median_deviation.T])
 	# Completely arbitary...triggers if the median deviation is
 	# 6 times bigger than the median
@@ -89,11 +89,11 @@ def stddev_from_moving_average(timeseries):
 	expAverage = series.rolling(window=50,center=True).mean()
 	stdDev = series.rolling(window=50,center=True).std()
 
-	indices_bool = np.abs(series - expAverage) > 4 * stdDev
+	indices_bool = np.abs(series - expAverage) > 3 * stdDev
 
-	indices = np.where(indices_bool)
+	indices = np.array(np.where(indices_bool)[0])
+	print indices, "##################"
 	#indices = np.array([np.where(column)[0] for column in indices_bool.T])
-
 
 	return indices
 
@@ -190,7 +190,7 @@ if __name__ == '__main__':
 
 	#data_lowpass = np.column_stack((Filters.movingaverage(data[:,0],50), Filters.movingaverage(data[:,1],50), Filters.movingaverage(data[:,2],50)))
 
-	anomaly_indices = grubbs(data_lowpass)
+	anomaly_indices = stddev_from_moving_average(data)
 	anom_amplitudes = data_lowpass[anomaly_indices]
 	anom_times = anomaly_indices/fs
 	print anomaly_indices
@@ -204,7 +204,7 @@ if __name__ == '__main__':
 	plt.plot(times,data_lowpass)
 	#[plt.plot(anom_times[i],anom_amplitudes[i],'ro',markersize = 10) for i in range(len(data_lowpass.T))]
 
-	plt.plot(anom_times, anom_amplitudes)
+	plt.plot(anom_times, anom_amplitudes,'ko', markersize=10)
 
 	plt.xlabel('Time/s')
 	plt.ylabel('Amplitude')
