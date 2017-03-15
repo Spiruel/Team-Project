@@ -11,11 +11,11 @@ from k_means_cluster import reconstruction_fn
 def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
-	
-dir = "/Users/teodortzokov/Dropbox/TracerCo project team folder/"
-dir1 = r'Large motor/'
-test_name = 'large_30V_5mins.csv'
-train_name = 'large_4V_nowater.csv'
+
+dir = "D:\Users\Samuel\Dropbox\TracerCo project team folder\\"
+dir1 = r'Large motor\\'
+test_name = 'large_2V_nowater.csv'
+train_name = 'large_12V.csv'
 
 training_data = np.loadtxt(dir + dir1 + train_name, delimiter=',', comments='#',skiprows=1, usecols=[0])
 training_lowpass = Filters.movingaverage(training_data,20)
@@ -37,7 +37,7 @@ min, max = amps.min(), amps.max()
 if np.abs(min) >= max:
 	ax0.set_ylim([-np.abs(min)-0.1*np.abs(min), np.abs(min)+0.1*np.abs(min)])
 else:
-	ax0.set_ylim([-np.abs(max)-0.1*np.abs(max), np.abs(min)+0.1*np.abs(max)])
+	ax0.set_ylim([-np.abs(max)-0.1*np.abs(max), np.abs(max)+0.1*np.abs(max)])
 ax0.set_xlabel('Time / s', fontsize=14); ax0.set_ylabel('Amplitude / V', fontsize=14)
 
 #anomaly plots here
@@ -59,7 +59,7 @@ difference = len(training_lowpass) - len(data_lowpass)
 if difference > 0:
 	training_lowpass = training_lowpass[:-difference]
 elif difference < 0:
-	training_lowpass = np.append(training_lowpass[:difference], training_lowpass)
+	training_lowpass = np.append(training_lowpass[:-difference], training_lowpass)
 	
 bins = 100
 ordered = sorted(training_lowpass)
@@ -83,9 +83,10 @@ print 'anom_indices:', K_anomalies
 ax1.plot(times[K_anomalies], np.linspace(displacement,displacement,len(K_anomalies)), '.', label='k_means', marker=marker.next())
 
 ax1.legend(bbox_to_anchor=(0.01, -2.2), loc=2, borderaxespad=0., ncol=2)
-ax1.set_xticks([]); ax1.set_yticks([])
+plt.setp( ax1.get_xticklabels(), visible=False)
+ax1.set_yticks([])
 ax1.set_ylim([-1,5])
 plt.gcf().subplots_adjust(hspace=.1)
 
-plt.savefig('figures/comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
+plt.savefig('comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
 plt.show()
