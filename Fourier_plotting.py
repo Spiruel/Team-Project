@@ -7,9 +7,9 @@ import Lorentz_params as lor
 
 if __name__ == '__main__':
 
-	file_name = 'large_2V_nowater'
+	file_name = 'large_self_repair_2'
 
-	data = np.loadtxt('data/'+file_name+'.csv', delimiter=',', comments='#',skiprows=1) 
+	data = np.loadtxt('/Users/teodortzokov/Dropbox/TracerCo project team folder/Large motor/'+file_name+'.csv', delimiter=',', comments='#',skiprows=1) 
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)
 

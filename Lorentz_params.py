@@ -4,7 +4,7 @@ import numpy as np
 import n_peaks_lorentzian as peaks
 import scipy
 
-def split(data, sample_size = 9000):
+def split(data, sample_size = 3000):
 	splitter = np.arange(0,len(data),sample_size)
 	chunks = np.split(data,splitter,axis=0)[1:-1]
 	return chunks
