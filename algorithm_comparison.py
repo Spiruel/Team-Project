@@ -12,17 +12,11 @@ def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
 
-<<<<<<< HEAD
+
 dir = "/Users/teodortzokov/Dropbox/TracerCo project team folder/"
 dir1 = r'12V motor/'
 test_name = '12V_hammer.csv'
 train_name = 'motornorm12V.csv'
-=======
-dir = "D:\Users\Samuel\Dropbox\TracerCo project team folder\\"
-dir1 = r'Large motor\\'
-test_name = 'large_2V_nowater.csv'
-train_name = 'large_12V.csv'
->>>>>>> 343534c8390b21858eb9bb1dac2a0b86f6729ea5
 
 training_data = np.loadtxt(dir + dir1 + train_name, delimiter=',', comments='#',skiprows=1, usecols=[0])
 training_lowpass = Filters.movingaverage(training_data,20)
@@ -102,10 +96,7 @@ ax1.set_yticks([])
 ax1.set_ylim([-1,5])
 plt.gcf().subplots_adjust(hspace=.1)
 
-<<<<<<< HEAD
 plt.savefig('figures/comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
 plt.savefig('figures/comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.png', dpi=300, bbox_inches='tight', transparent=True)
-=======
-plt.savefig('comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
->>>>>>> 343534c8390b21858eb9bb1dac2a0b86f6729ea5
+
 plt.show()
