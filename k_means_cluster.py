@@ -61,6 +61,7 @@ def plot_waves(waves, step):
     plt.show()
 
 def cluster_centroids(windowed_segments):
+	'''Input is the arrray of arrays representing the windowed training segments. Returns the positions of the cluster centroids, again as an array of arrays.'''
 	clusterer.fit(windowed_segments) #splits data into 150 clusters, so if there are 4000 windows, that makes 4000/150 windows in each cluster
 	cluster_centroids = clusterer.cluster_centers_ #finds the centroid of each cluster, in n dimensional space, where n is equal to segment_len
 	return cluster_centroids
@@ -73,6 +74,8 @@ def fit_centroids(data):
 	return centroids
 
 def synthetic(training_data, segment_length):
+	'''Takes original training data as input.
+	Splits data into semgnets, applies windowing function, and then creates synthetic segments from the cluster centroids of these windowed segments.'''
 	fitting_segments = sliding_chunker(training_data, segment_length=segment_len, slide_length=slide_len)
 	windowed_segments = windowed_segments_fn(fitting_segments, segment_length=segment_len)
 
@@ -81,7 +84,9 @@ def synthetic(training_data, segment_length):
 	return centroids
 
 def fitting(fitting_data, centroids, segment_length):
-
+	'''Takes the fitting data as an input. 
+	Splits data into segments and finds the closest matching synthetic segment for each of the fitting data segments.
+	Stitches the synthetic segments together to reconstruct the original fitting data.'''
 	reconstruction = np.zeros(len(fitting_data))
 	new_slide_len = int(segment_length/2)
 
@@ -222,9 +227,6 @@ if __name__ == '__main__':
 
 	clusters = cluster_centroids(windowed_segments)
 	norm_clust =  clusters
-
-	#plot_waves(windowed_segments,step=50)
-	#plot_waves(clusters,step=3)
 
 	f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
 	axarr[0,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
