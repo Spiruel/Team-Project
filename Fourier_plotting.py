@@ -7,12 +7,14 @@ import Lorentz_params as lor
 
 if __name__ == '__main__':
 
-	file_name = 'gears_removed_snipped1'
+	file_name = 'small_misaligned_3'
 
-	data = np.loadtxt('/Users/teodortzokov/Dropbox/TracerCo project team folder/Gears removed/'+file_name+'.csv', delimiter=',', comments='#',skiprows=1) 
+	data = np.loadtxt('/Users/teodortzokov/Dropbox/TracerCo project team folder/Small motor/'+file_name+'.csv', delimiter=',', comments='#',skiprows=1) 
 
 	chan1, chan2, chan3 = peaks.mult_channels(data)
-
+	#chan1 = chan1[:200000]
+	#chan2 = chan2[:200000]
+	#chan3 = chan3[:200000]
 	#chan1new = chan1[20000:30000]
 	#chan1 = lor.split(chan1)[0]
 
@@ -32,7 +34,7 @@ if __name__ == '__main__':
 
 	#### plotting
 
-	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True, figsize=(5,4))
+	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True, figsize=(8,4))
 	ax1.semilogy(frequencies1, amplitudes1, color ='blue')
 	#ax1.semilogy(frequencies1new, amplitudes1new, color ='black')
 	#ax1.semilogy(peak_freqs1, peak_amplitudes1, 'ko', markersize=10)
@@ -53,9 +55,9 @@ if __name__ == '__main__':
 	f.subplots_adjust(hspace=0)
 	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 	ax3.set_xlim(0,1500)
-	#ax1.set_ylim(0.00002,200)
-	#ax2.set_ylim(0.00002,200)
-	#ax3.set_ylim(0.00002,200)
+	ax1.set_ylim(0.000009,300)
+	ax2.set_ylim(0.000009,300)
+	ax3.set_ylim(0.000009,300)
 	plt.xlabel('Frequency / Hz', fontsize=14)
 
 	#plt.yticks([])
@@ -69,8 +71,8 @@ if __name__ == '__main__':
 
 	plt.style.use('seaborn-white')
 
-	plt.savefig('figures/frequency/'+file_name+'.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/frequency/'+file_name+'.png', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/frequency/freq_'+file_name+'.pdf', dpi=300, transparent=True, bbox_inches='tight')
+	plt.savefig('figures/frequency/freq_'+file_name+'.png', dpi=300, transparent=True, bbox_inches='tight')
 
 	plt.show()
 

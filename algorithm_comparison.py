@@ -11,15 +11,15 @@ from k_means_cluster import reconstruction_fn
 def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
-	
+
 dir = "/Users/teodortzokov/Dropbox/TracerCo project team folder/"
-dir1 = r'Large motor/'
-test_name = 'large_30V_5mins.csv'
-train_name = 'large_4V_nowater.csv'
+dir1 = r'12V motor/'
+test_name = '12V_hammer.csv'
+train_name = 'motornorm12V.csv'
 
 training_data = np.loadtxt(dir + dir1 + train_name, delimiter=',', comments='#',skiprows=1, usecols=[0])
 training_lowpass = Filters.movingaverage(training_data,20)
-data = np.loadtxt(dir + dir1 + test_name, delimiter=',', comments='#',skiprows=1, usecols=[0])
+data = np.loadtxt(dir + dir1 + test_name, delimiter=',', comments='#',skiprows=1, usecols=[0])[0:200000]
 data_lowpass = Filters.movingaverage(data,20)
 
 #data_lowpass = np.c_[data_lowpass, np.zeros(len(data_lowpass)), np.zeros(len(data_lowpass))]
@@ -37,7 +37,7 @@ min, max = amps.min(), amps.max()
 if np.abs(min) >= max:
 	ax0.set_ylim([-np.abs(min)-0.1*np.abs(min), np.abs(min)+0.1*np.abs(min)])
 else:
-	ax0.set_ylim([-np.abs(max)-0.1*np.abs(max), np.abs(min)+0.1*np.abs(max)])
+	ax0.set_ylim([-np.abs(max)-0.1*np.abs(max), np.abs(max)+0.1*np.abs(max)])
 ax0.set_xlabel('Time / s', fontsize=14); ax0.set_ylabel('Amplitude / V', fontsize=14)
 
 #anomaly plots here
@@ -53,13 +53,13 @@ for test in [median_absolute_deviation, five_sigma, stddev_from_moving_average]:
 	ax1.plot(times[anom_indices], np.linspace(displacement,displacement,len(anom_indices)), '.', label=str(test.__name__), marker=marker.next())
 	displacement += 1
 
-print 'Doing histogram...'
+'''print 'Doing histogram...'
 
 difference = len(training_lowpass) - len(data_lowpass)
 if difference > 0:
 	training_lowpass = training_lowpass[:-difference]
 elif difference < 0:
-	training_lowpass = np.append(training_lowpass[:difference], training_lowpass)
+	training_lowpass = np.append(training_lowpass[:-difference], training_lowpass)
 	
 bins = 100
 ordered = sorted(training_lowpass)
@@ -72,20 +72,29 @@ error = training_lowpass - reconstructed
 histo_anomalies = np.array(np.where(np.abs(error) >= 5*np.std(error))[0])
 print 'anom_indices', histo_anomalies
 ax1.plot(times[histo_anomalies], np.linspace(displacement,displacement,len(histo_anomalies)), '.', label='histogram', marker=marker.next())
-displacement += 1
+displacement += 1'''
 
 print 'Doing k_means test...'
 data_lowpass_norm = data_lowpass * (np.mean(np.abs(training_lowpass))/np.mean(np.abs(data_lowpass)))
-reconstruction = reconstruction_fn(training_lowpass[:9000],data_lowpass_norm)
+reconstruction = reconstruction_fn(training_lowpass[9000:18000],data_lowpass_norm)
 recon_error = reconstruction - data_lowpass_norm
 K_anomalies = np.array(np.where(np.abs(recon_error) >= 5*np.std(recon_error))[0])
 print 'anom_indices:', K_anomalies
 ax1.plot(times[K_anomalies], np.linspace(displacement,displacement,len(K_anomalies)), '.', label='k_means', marker=marker.next())
 
+#for inset axes
+'''ax2 = plt.axes([0.24, .37, .205, .205])
+ax2.plot(times, amps, 'b')
+ax2.set_xlim([54.47,54.52])
+ax2.set_ylim([-0.015,0])
+ax2.tick_params(axis='both', colors='white')'''
+
 ax1.legend(bbox_to_anchor=(0.01, -2.2), loc=2, borderaxespad=0., ncol=2)
-ax1.set_xticks([]); ax1.set_yticks([])
+plt.setp( ax1.get_xticklabels(), visible=False)
+ax1.set_yticks([])
 ax1.set_ylim([-1,5])
 plt.gcf().subplots_adjust(hspace=.1)
 
 plt.savefig('figures/comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.pdf', dpi=300, bbox_inches='tight', transparent=True)
+plt.savefig('figures/comparison/'+str(test_name[:-4])+'_'+str(train_name[:-4])+'.png', dpi=300, bbox_inches='tight', transparent=True)
 plt.show()
