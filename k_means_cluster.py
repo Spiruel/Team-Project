@@ -38,27 +38,27 @@ def windowed_segments_fn(segments, segment_length):
 	return windowed_segments
 
 def plot_waves(waves, step):
-    """
-    Plot a set of 9 waves from the given set, starting from the first one
-    and increasing in index by 'step' for each subsequent graph
-    """
-    f = plt.figure(figsize=(8,4))
-    n_graph_rows = 1
-    n_graph_cols = 3
-    graph_n = 1
-    wave_n = 0
-    for _ in range(n_graph_rows):
-        for _ in range(n_graph_cols):
-            axes = plt.subplot(n_graph_rows, n_graph_cols, graph_n)
-            #axes.set_ylim([-0.05, 0.1])
-            plt.plot(waves[wave_n])
-            graph_n += 1
-            wave_n += step
-    # fix subplot sizes so that everything fits
-    plt.tight_layout()
-    f.subplots_adjust(hspace=0)
-    plt.style.use('seaborn-white')
-    plt.show()
+	"""
+	Plot a set of 9 waves from the given set, starting from the first one
+	and increasing in index by 'step' for each subsequent graph
+	"""
+	f = plt.figure(figsize=(8,4))
+	n_graph_rows = 1
+	n_graph_cols = 3
+	graph_n = 1
+	wave_n = 0
+	for _ in range(n_graph_rows):
+		for _ in range(n_graph_cols):
+			axes = plt.subplot(n_graph_rows, n_graph_cols, graph_n)
+			#axes.set_ylim([-0.05, 0.1])
+			plt.plot(waves[wave_n])
+			graph_n += 1
+			wave_n += step
+	# fix subplot sizes so that everything fits
+	plt.tight_layout()
+	f.subplots_adjust(hspace=0)
+	plt.style.use('seaborn-white')
+	plt.show()
 
 def cluster_centroids(windowed_segments):
 	'''Input is the arrray of arrays representing the windowed training segments. Returns the positions of the cluster centroids, again as an array of arrays.'''
@@ -155,68 +155,75 @@ if __name__ == '__main__':
 
 	centroids = synthetic(normal_data, segment_len)
 
-	# fig = plt.figure()
-	# ax = fig.add_subplot(111)
+	real_time=False
+	if real_time:
 
-	# [line] = plt.plot([0],[0], label='error')
-	# plt.ion()
-	# dat = np.array([])
-	# ax.set_ylim([-0.002,0.002])
-	# ax.set_xlim([0,len(other_data)])
-	
-	# block = 500
-	# for pos in range(0, len(other_data), block):
-		# reconstruction = fitting(other_data[pos:pos+block], centroids, segment_len)
-		# dat = np.append(dat, reconstruction)
-		# line.set_xdata(range(len(dat)))
-		# line.set_ydata(dat)
-		# plt.pause(.05)
-	
-	# plt.ioff()
-	
-	# plt.plot(range(len(other_data)), other_data, label='orig data')
-	# plt.legend(frameon=False)
-	# plt.show()
+		fig = plt.figure()
+		ax = fig.add_subplot(111)
 
-	reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
+		[line] = plt.plot([0],[0], label='error')
+		plt.ion()
+		dat = np.array([])
+		ax.set_ylim([-0.002,0.002])
+		ax.set_xlim([0,len(other_data)])
+		
+		block = 500
+		for pos in range(0, len(other_data), block):
+			reconstruction = fitting(other_data[pos:pos+block], centroids, segment_len)
+			dat = np.append(dat, reconstruction)
+			line.set_xdata(range(len(dat)))
+			line.set_ydata(dat)
+			plt.pause(.05)
+		
+		plt.ioff()
+		
+		plt.plot(range(len(other_data)), other_data, label='orig data')
+		plt.legend(frameon=False)
+		plt.show()
 
-	n_plot_samples = 9000
+	plot_reconstruction = True
 
-	error = reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples]
-	error_98th_percentile = np.percentile(error, 98)
-	print("Maximum reconstruction error was %.5f" % error.max())
-	print("98th percentile of reconstruction error was %.5f" % error_98th_percentile)
+	if plot_reconstruction:
+		reconstruction = reconstruction_fn(normal_data, other_data, segment_len)
 
-	plt.style.use('seaborn-white')
-	f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False, figsize=(8,4))
-	ax1.plot(other_data[0:n_plot_samples], 'b', lw=1, label="Original")
-	ax2.plot(reconstruction[0:n_plot_samples], 'orange', lw=1, label="Reconstructed")
-	ax3.plot(error[0:n_plot_samples], 'r', lw=1, label="Reconstruction Error")
-	# Fine-tune figure; make subplots close to each other and hide x ticks for
-	# all but bottom plot.
-	f.subplots_adjust(hspace=0)
-	plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+		n_plot_samples = 9000
 
-	lim = np.max(np.abs(other_data))
+		error = reconstruction[0:n_plot_samples] - other_data[0:n_plot_samples]
+		error_98th_percentile = np.percentile(error, 98)
+		print("Maximum reconstruction error was %.5f" % error.max())
+		print("98th percentile of reconstruction error was %.5f" % error_98th_percentile)
 
-	ax1.set_xlim(0,n_plot_samples)
-	ax1.set_ylim([-lim-0.2*lim,lim+0.2*lim])
-	ax2.set_ylim([-lim-0.2*lim,lim+0.2*lim])
-	ax3.set_ylim([-lim-0.2*lim,lim+0.2*lim])
-	for a in [ax1, ax2, ax3]:
-		a.legend(frameon=False, loc='upper right')
-	ax3.set_xlabel('Samples',fontsize=14)
-	ax2.set_ylabel('Amplitude / V',fontsize=14)
+		plt.style.use('seaborn-white')
+		f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False, figsize=(8,4))
+		ax1.plot(other_data[0:n_plot_samples], 'b', lw=1, label="Original")
+		ax2.plot(reconstruction[0:n_plot_samples], 'orange', lw=1, label="Reconstructed")
+		ax3.plot(error[0:n_plot_samples], 'r', lw=1, label="Reconstruction Error")
+		# Fine-tune figure; make subplots close to each other and hide x ticks for
+		# all but bottom plot.
+		f.subplots_adjust(hspace=0)
+		plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 
-	plt.style.use('seaborn-white')
+		lim = np.max(np.abs(other_data))
 
-	plt.savefig('figures/kmeans_large_4Vnowater.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/kmeans_large_4Vnowater.png', dpi=300, transparent=True, bbox_inches='tight')
-	plt.show()
+		ax1.set_xlim(0,n_plot_samples)
+		ax1.set_ylim([-lim-0.2*lim,lim+0.2*lim])
+		ax2.set_ylim([-lim-0.2*lim,lim+0.2*lim])
+		ax3.set_ylim([-lim-0.2*lim,lim+0.2*lim])
+		for a in [ax1, ax2, ax3]:
+			a.legend(frameon=False, loc='upper right')
+		ax3.set_xlabel('Samples',fontsize=14)
+		ax2.set_ylabel('Amplitude / V',fontsize=14)
 
-	
-	distances = clusterer.inertia_
-	print distances
+		plt.style.use('seaborn-white')
+
+		plt.savefig('figures/kmeans_large_4Vnowater.pdf', dpi=300, transparent=True, bbox_inches='tight')
+		plt.savefig('figures/kmeans_large_4Vnowater.png', dpi=300, transparent=True, bbox_inches='tight')
+		plt.show()
+
+	cluster_distance=False
+	if cluster_distance:
+		distances = clusterer.inertia_
+		print distances
 
 
 	################ Plotting random windows 
