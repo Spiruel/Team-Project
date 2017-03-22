@@ -226,89 +226,64 @@ if __name__ == '__main__':
 		print distances
 
 
-	################ Plotting random windows 
+	plot_random_segments = False
+	if plot_random_segments:
 
-	'''initial_segments = sliding_chunker(normal_data,segment_len,slide_len)
-	windowed_segments = windowed_segments_fn(initial_segments,segment_len)
-	norm_winds = windowed_segments
+		initial_segments = sliding_chunker(normal_data,segment_len,slide_len)
+		windowed_segments = windowed_segments_fn(initial_segments,segment_len)
+		norm_winds = windowed_segments
 
-	clusters = cluster_centroids(windowed_segments)
-	norm_clust =  clusters
+		clusters = cluster_centroids(windowed_segments)
+		norm_clust =  clusters
 
-	f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
-	axarr[0,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[0,1].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[0,2].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[0,3].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[0,4].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
+		axarr[0,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[0,1].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[0,2].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[0,3].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[0,4].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
 
-	axarr[1,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[1,1].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[1,2].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[1,3].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
-	axarr[1,4].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[1,0].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[1,1].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[1,2].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[1,3].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
+		axarr[1,4].plot(10**3*norm_winds[randint(0,len(norm_winds))], color='blue')
 
-	plt.subplots_adjust(wspace=0.1, hspace=0.1)
+		plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
-	f.text(0.5,0.0,'Element in Segment',ha='center', fontsize = '14')
-	f.text(0.07,0.5,'Amplitude / mV',va='center', fontsize = '14', rotation = 'vertical')
+		f.text(0.5,0.0,'Element in Segment',ha='center', fontsize = '14')
+		f.text(0.07,0.5,'Amplitude / mV',va='center', fontsize = '14', rotation = 'vertical')
 
-	plt.style.use('seaborn-white')
+		plt.style.use('seaborn-white')
 
-	plt.savefig('figures/kmeans_training.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/kmeans_training.png', dpi=300, transparent=True, bbox_inches='tight')
+		plt.savefig('figures/kmeans_training.pdf', dpi=300, transparent=True, bbox_inches='tight')
+		plt.savefig('figures/kmeans_training.png', dpi=300, transparent=True, bbox_inches='tight')
 
-	#plt.show()
+		#plt.show()
 
-	#plt.clf()
-	f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
-	axarr[0,0].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[0,1].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[0,2].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[0,3].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[0,4].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		#plt.clf()
+		f, axarr = plt.subplots(2, 5, sharey=True, sharex=True, figsize=(10,4))
+		axarr[0,0].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[0,1].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[0,2].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[0,3].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[0,4].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
 
-	axarr[1,0].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[1,1].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[1,2].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[1,3].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
-	axarr[1,4].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[1,0].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[1,1].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[1,2].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[1,3].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
+		axarr[1,4].plot(10**3*norm_clust[randint(0,len(norm_clust))], color='orange')
 
-	plt.subplots_adjust(wspace=0.1, hspace=0.1)
+		plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
-	f.text(0.5,0.0,'Element in Segment',ha='center', fontsize = '14')
-	f.text(0.07,0.5,'Amplitude / mV',va='center', fontsize = '14', rotation = 'vertical')
+		f.text(0.5,0.0,'Element in Segment',ha='center', fontsize = '14')
+		f.text(0.07,0.5,'Amplitude / mV',va='center', fontsize = '14', rotation = 'vertical')
 
-	plt.style.use('seaborn-white')
+		plt.style.use('seaborn-white')
 
-	plt.savefig('figures/kmeans_synthetic.pdf', dpi=300, transparent=True, bbox_inches='tight')
-	plt.savefig('figures/kmeans_synthetic.png', dpi=300, transparent=True, bbox_inches='tight')
+		plt.savefig('figures/kmeans_synthetic.pdf', dpi=300, transparent=True, bbox_inches='tight')
+		plt.savefig('figures/kmeans_synthetic.png', dpi=300, transparent=True, bbox_inches='tight')
 
-	plt.show()'''
+		plt.show()
 
-	##### Looking at a single segment and the quality of fit
-	'''new_slide_len = int(segment_len/2)
-
-	test_segments = sliding_chunker(normal_data, segment_length=segment_len,slide_length=new_slide_len) 
-	print len(test_segments)
-	#can make slide length half the length of the window length for the purpose of reconstructing the waveform.
-
-
-	segment = np.copy(test_segments[500])
-	# remember, the clustering was set up using the windowed data
-	# so to find a match, we should also window our search key
-	windowed_segment = segment * np.sin(np.linspace(0, np.pi, segment_len))**2
-	# predict() returns a list of centres to cope with the possibility of multiple
-	# samples being passed
-	nearest_centroid_idx = clusterer.predict(windowed_segment)[0]
-	nearest_centroid = np.copy(cluster_centroids[nearest_centroid_idx])
-	plt.figure()
-	plt.plot(segment, label="Original segment")
-	plt.plot(windowed_segment, label="Windowed segment")
-	plt.plot(nearest_centroid, label="Nearest centroid")
-	plt.legend()
-	plt.show()
-
-	#### plotting windowed segments and synthetic ones
-	plot_waves(windowed_segments, step=3)
-	plot_waves(cluster_centroids, step=3)'''
